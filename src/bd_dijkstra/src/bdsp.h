@@ -31,6 +31,7 @@ typedef struct edge
     int target;
     float8 cost;
     float8 reverse_cost;
+    bool incOrder;
 } edge_t;
 
 

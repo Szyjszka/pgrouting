@@ -38,7 +38,7 @@
 #include "utils.h"
 
 #undef DEBUG
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <stdio.h>

@@ -89,6 +89,7 @@ public:
 	double ReverseCost;
 	int StartNode;
 	int EndNode;
+	bool incOrder;
 };
 
 typedef std::vector<GraphEdgeInfo> GraphEdgeVector;

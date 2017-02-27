@@ -42,7 +42,7 @@ Datum bidir_dijkstra_shortest_path(PG_FUNCTION_ARGS);
 
 
 #undef DEBUG
-//#define DEBUG 1
+#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(format, arg...)                     \
@@ -65,6 +65,7 @@ typedef struct edge_columns
   int target;
   int cost;
   int reverse_cost;
+  bool incOrder;
 } edge_columns_t;
 
 
@@ -102,19 +103,21 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
   edge_columns->source = SPI_fnumber(SPI_tuptable->tupdesc, "source");
   edge_columns->target = SPI_fnumber(SPI_tuptable->tupdesc, "target");
   edge_columns->cost = SPI_fnumber(SPI_tuptable->tupdesc, "cost");
-
+  edge_columns->incOrder = SPI_fnumber(SPI_tuptable->tupdesc, "incorder");
   if (edge_columns->id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->source == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->target == SPI_ERROR_NOATTRIBUTE ||
+      edge_columns->incOrder == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->cost == SPI_ERROR_NOATTRIBUTE) {
 
       elog(ERROR, "Error, query must return columns "
-           "'id', 'source', 'target' and 'cost'");
+           "'id', 'source', 'target' and 'cost' and 'incOrder");
       return -1;
   }
 
   if (SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->source) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->target) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->incOrder) != BOOLOID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->cost) != FLOAT8OID) {
 
       elog(ERROR, "Error, columns 'source', 'target' must be of type int4, 'cost' must be of type float8");
@@ -175,6 +178,10 @@ fetch_edge(HeapTuple *tuple, TupleDesc *tupdesc,
   if (isnull) elog(ERROR, "cost contains a null value");
   target_edge->cost = DatumGetFloat8(binval);
 
+  binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->incOrder, &isnull);
+  if (isnull) elog(ERROR, "incorder contains a null value");
+  target_edge->incOrder = DatumGetBool(binval);
+
   if (edge_columns->reverse_cost != -1) {
       binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->reverse_cost, 
                              &isnull);
@@ -196,7 +203,7 @@ static int compute_bidirsp(char* sql, int start_vertex,
   edge_t *edges = NULL;
   int total_tuples = 0;
   edge_columns_t edge_columns = {.id= -1, .source= -1, .target= -1, 
-                                 .cost= -1, .reverse_cost= -1};
+                                 .cost= -1, .reverse_cost= -1, .incOrder = false};
   int v_max_id=0;
   int v_min_id=INT_MAX;
 
