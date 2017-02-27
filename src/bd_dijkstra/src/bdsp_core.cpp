@@ -33,6 +33,7 @@
 #endif
 
 #include <exception>
+#include "algorithm_time_measure.hpp"
 #include "BiDirDijkstra.h"
 #include "bdsp.h"
 #include "utils.h"
@@ -72,7 +73,11 @@ int bidirsp_wrapper(
         DBG("Calling BiDirDijkstra initializer.\n");
         BiDirDijkstra bddijkstra;
         DBG("BiDirDijkstra initialized\n");
+        RouterCH::AlgorithmTimeMeasure atm;
+        atm.startMeasurement();
         res = bddijkstra.bidir_dijkstra(edges, edge_count, maxNode, start_vertex, end_vertex, path, path_count, err_msg);
+        atm.stopMeasurement();
+        DBG("Czas algorytmu %f \n", atm.getMeanTime());
     }
     catch(std::exception& e) {
         DBG("catch(std::exception e.what: %s\n", e.what());
