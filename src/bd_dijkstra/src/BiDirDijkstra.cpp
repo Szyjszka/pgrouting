@@ -216,7 +216,14 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 		GraphEdgeInfo edge = m_vecEdgeVector[edge_index];
 		// Get the connected node
 		int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
-		
+        if(dir == 1){
+            DBG("FORWARD ");
+        }
+        else{
+            DBG("BACKWARD ");
+        }
+        DBG("Obecny %d rozpatrywany %d cur_node == edge.StartNode %d edge.incOrder %d \n",
+            cur_node+1, new_node+1, cur_node == edge.StartNode, edge.incOrder);
 		if(cur_node == edge.StartNode)
 		{
 			// Current node is the startnode of the edge. For forward search it should use forward cost, otherwise it should use the reverse cost,
@@ -227,11 +234,17 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 				edge_cost = edge.ReverseCost;
 
 			// Check if the direction is valid for exploration
-			if((edge.Direction == 0 || edge_cost >= 0.0) && ((dir==-1) == edge.incOrder))
-			{			
+            if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
+            {
 				// Check if the current edge gives better result
 				if(cur_cost + edge_cost < getcost(new_node, dir))
 				{
+                    if(dir == 1){
+                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
+                    }
+                    else{
+                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
+                    }
 					// explore the node, and push it in the queue
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
@@ -256,11 +269,18 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 				edge_cost = edge.Cost;
 
 			// Check if the direction is valid for exploration
-			if((edge.Direction == 0 || edge_cost >= 0.0) && ((dir==-1) == edge.incOrder))
+            if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
 			{
+
 				// Check if the current edge gives better result
 				if(cur_cost + edge_cost < getcost(new_node, dir))
 				{
+                    if(dir == 1){
+                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
+                    }
+                    else{
+                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
+                    }
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
@@ -330,18 +350,26 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	3. ELSE explore from the forward directtion.
 */
 
-	while(!fque.empty() && !rque.empty())
-	{
-		PDI fTop = fque.top();
-		PDI rTop = rque.top();
+    PDI fTop = fque.top();
+    PDI rTop = rque.top();
+    while(!fque.empty() || !rque.empty())
+    {
+        if(!fque.empty())
+            fTop = fque.top();
+        if(!rque.empty())
+            rTop = rque.top();
+        DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
 		if(fTop.first + rTop.first > m_MinCost) //We are done, there is no path with lower cost
+        {
+            DBG("SKONCZYLISMY LOL\n");
 			break;
-
-		if(rTop.first < fTop.first) // Explore from reverse queue
+        }
+        if((rTop.first < fTop.first) || fque.empty()) // Explore from reverse queue
 		{
 			cur_node = rTop.second;
 			int dir = -1;
 			rque.pop();
+            DBG("Wybieramy node BACKWARD %d\n", cur_node+1);
 			explore(cur_node, rTop.first, dir, rque);
 		}
 		else                        // Explore from forward queue
@@ -349,6 +377,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 			cur_node = fTop.second;
 			int dir = 1;
 			fque.pop();
+            DBG("Wybieramy node FORWARD %d\n", cur_node+1);
 			explore(cur_node, fTop.first, dir, fque);
 		}
 	}
@@ -472,7 +501,7 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
         Inc++;
     else
         Dec++;
-    DBG("INC %d DEC %d", Inc, Dec);
+//    DBG("INC %d DEC %d", Inc, Dec);
 	// Set the direction. If both cost and reverse cost has positive value the edge is bidirectional and direction field is 0. If cost is positive and reverse cost
 	// negative then the edge is unidirectional with direction = 1 (goes from source to target) otherwise it is unidirectional with direction = -1 (goes from target
 	// to source). Another way of creating unidirectional edge is assigning big values in cost or reverse_cost. In that case the direction is still zero and this case
@@ -515,7 +544,7 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
 	m_vecNodeVector[newEdge.EndNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
 
 
-	
+
 	//Adding edge to the list
 	m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
 	m_vecEdgeVector.push_back(newEdge);
