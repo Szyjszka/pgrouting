@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include <vector>
 #include "./pgr_dijkstra.hpp"
 #include "./dijkstra_driver.h"
+#include "algorithm_time_measure.hpp"
 
 extern "C" {
 #include "postgres.h"
@@ -37,6 +38,19 @@ extern "C" {
 #include "./../../common/src/postgres_connection.h"
 }
 
+
+#ifdef DEBUG
+#include <stdio.h>
+static FILE *dbg;
+#define DBG(format, arg...) \
+    dbg = fopen("/tmp/sew-debug", "a"); \
+    if (dbg) { \
+        fprintf(dbg, format,  ## arg); \
+        fclose(dbg); \
+    }
+#else
+#define DBG(format, arg...) do { ; } while (0)
+#endif
 
 // #include "./../../common/src/pgr_types.h"
 // #include "./../../common/src/postgres_connection.h"
@@ -296,6 +310,9 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
     //  2) end_vertex is in the data_edges  DONE
     //  3) start and end_vertex are different DONE
 
+        RouterCH::AlgorithmTimeMeasure atm;
+        atm.startMeasurement();
+
     if (total_tuples == 1) {
       *ret_path = noPathFound3(-1, path_count, (*ret_path));
       *ret_path = NULL;
@@ -322,6 +339,9 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
       undigraph.initialize_graph(data_edges, total_tuples);
       undigraph.dijkstra(path, start_vertex, end_vertex);
     }
+
+    atm.stopMeasurement();
+   DBG("Dijkstra: Czas algorytmu %f \n", atm.getMeanTime());
 
     int count(path.path.size());
 

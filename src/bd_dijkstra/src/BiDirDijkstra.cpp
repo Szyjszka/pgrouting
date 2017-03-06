@@ -364,7 +364,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
             DBG("SKONCZYLISMY LOL\n");
 			break;
         }
-        if((rTop.first < fTop.first) || fque.empty()) // Explore from reverse queue
+        if(((rTop.first < fTop.first) || fque.empty()) && !rque.empty()) // Explore from reverse queue
 		{
 			cur_node = rTop.second;
 			int dir = -1;

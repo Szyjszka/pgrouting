@@ -77,7 +77,7 @@ int bidirsp_wrapper(
         atm.startMeasurement();
         res = bddijkstra.bidir_dijkstra(edges, edge_count, maxNode, start_vertex, end_vertex, path, path_count, err_msg);
         atm.stopMeasurement();
-        DBG("Czas algorytmu %f \n", atm.getMeanTime());
+        DBG("CH: Czas algorytmu %f \n", atm.getMeanTime());
     }
     catch(std::exception& e) {
         DBG("catch(std::exception e.what: %s\n", e.what());
