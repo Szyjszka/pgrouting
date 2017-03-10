@@ -216,12 +216,12 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 		GraphEdgeInfo edge = m_vecEdgeVector[edge_index];
 		// Get the connected node
 		int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
-        if(dir == 1){
-            DBG("FORWARD ");
-        }
-        else{
-            DBG("BACKWARD ");
-        }
+//        if(dir == 1){
+//            DBG("FORWARD ");
+//        }
+//        else{
+//            DBG("BACKWARD ");
+//        }
         DBG("Obecny %d rozpatrywany %d cur_node == edge.StartNode %d edge.incOrder %d \n",
             cur_node+1, new_node+1, cur_node == edge.StartNode, edge.incOrder);
 		if(cur_node == edge.StartNode)
@@ -245,6 +245,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
                     else{
                         DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
                     }
+                    DBG("Koszt nowego %f \n", edge_cost);
 					// explore the node, and push it in the queue
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
@@ -281,6 +282,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
                     else{
                         DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
                     }
+                    DBG("Koszt nowego %f \n", edge_cost);
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
@@ -361,24 +363,24 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
         DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
 		if(fTop.first + rTop.first > m_MinCost) //We are done, there is no path with lower cost
         {
-            DBG("SKONCZYLISMY LOL\n");
+            DBG("SKONCZYLISMY KOSZT: %f\n", m_MinCost);
 			break;
         }
         if(((rTop.first < fTop.first) || fque.empty()) && !rque.empty()) // Explore from reverse queue
 		{
 			cur_node = rTop.second;
-			int dir = -1;
-			rque.pop();
-            DBG("Wybieramy node BACKWARD %d\n", cur_node+1);
-			explore(cur_node, rTop.first, dir, rque);
+            int dir = -1;
+            DBG("Wybieramy node BACKWARD %d o koszcie %f\n", cur_node+1, rTop.first);
+            rque.pop();
+            explore(cur_node, rTop.first, dir, rque);
 		}
 		else                        // Explore from forward queue
 		{
 			cur_node = fTop.second;
-			int dir = 1;
-			fque.pop();
-            DBG("Wybieramy node FORWARD %d\n", cur_node+1);
-			explore(cur_node, fTop.first, dir, fque);
+            int dir = 1;
+            DBG("Wybieramy node FORWARD %d o koszcie %f\n", cur_node+1, fTop.first);
+            fque.pop();
+            explore(cur_node, fTop.first, dir, fque);
 		}
 	}
 
@@ -466,6 +468,7 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
     DBG("calling addEdge in a loop\n");
 	for(i = 0; i < edge_count; i++)
 	{
+        DBG("KOSZT: %f \n", edges[i].cost);
 		addEdge(edges[i]);
 	}
 
@@ -494,7 +497,7 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
 	newEdge.StartNode = edgeIn.source;
 	newEdge.EndNode = edgeIn.target;
 	newEdge.Cost = edgeIn.cost;
-    newEdge.ReverseCost = edgeIn.reverse_cost;
+    newEdge.ReverseCost = edgeIn.cost;/*edgeIn.reverse_cost;*/
     newEdge.incOrder = edgeIn.incOrder;
     static unsigned int Inc = 0,Dec = 0;
     if(edgeIn.incOrder)
