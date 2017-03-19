@@ -37,7 +37,7 @@ extern "C" {
 #include "./../../common/src/pgr_types.h"
 #include "./../../common/src/postgres_connection.h"
 }
-
+#undef DEBUG
 
 #ifdef DEBUG
 #include <stdio.h>

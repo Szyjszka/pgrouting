@@ -73,15 +73,15 @@ void BiDirDijkstra::initall(int maxNode)
 {
 	int i;
 	m_vecPath.clear();
-    DBG("BiDirDijkstra::initall: allocating m_pFParent, m_pRParent maxNode: %d\n", maxNode+1);
+//    DBG("BiDirDijkstra::initall: allocating m_pFParent, m_pRParent maxNode: %d\n", maxNode+1);
 	m_pFParent = new PARENT_PATH[maxNode + 1];
 	m_pRParent = new PARENT_PATH[maxNode + 1];
-    DBG("BiDirDijkstra::initall: allocated m_pFParent, m_pRParent\n");
+//    DBG("BiDirDijkstra::initall: allocated m_pFParent, m_pRParent\n");
 
-    DBG("BiDirDijkstra::initall: allocating m_pFCost, m_pRCost maxNode: %d\n", maxNode+1);
+//    DBG("BiDirDijkstra::initall: allocating m_pFCost, m_pRCost maxNode: %d\n", maxNode+1);
 	m_pFCost = new double[maxNode + 1];
 	m_pRCost = new double[maxNode + 1];
-    DBG("BiDirDijkstra::initall: allocated m_pFCost, m_pRCost\n");
+//    DBG("BiDirDijkstra::initall: allocated m_pFCost, m_pRCost\n");
 
 	for(i = 0; i <= maxNode; i++)
 	{
@@ -94,10 +94,10 @@ void BiDirDijkstra::initall(int maxNode)
 	m_MinCost = INF;
 	m_MidNode = -1;
 
-    DBG("BiDirDijkstra::initall: m_vecNodeVector.reserve(%d)\n", maxNode + 1);
+//    DBG("BiDirDijkstra::initall: m_vecNodeVector.reserve(%d)\n", maxNode + 1);
     // reserve space for nodes
     m_vecNodeVector.reserve(maxNode + 1);
-    DBG("           space reserved!\n");
+//    DBG("           space reserved!\n");
 }
 
 /*
@@ -222,8 +222,8 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 //        else{
 //            DBG("BACKWARD ");
 //        }
-        DBG("Obecny %d rozpatrywany %d cur_node == edge.StartNode %d edge.incOrder %d \n",
-            cur_node+1, new_node+1, cur_node == edge.StartNode, edge.incOrder);
+//        DBG("Obecny %d rozpatrywany %d cur_node == edge.StartNode %d edge.incOrder %d \n",
+//            cur_node+1, new_node+1, cur_node == edge.StartNode, edge.incOrder);
 		if(cur_node == edge.StartNode)
 		{
 			// Current node is the startnode of the edge. For forward search it should use forward cost, otherwise it should use the reverse cost,
@@ -240,12 +240,12 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 				if(cur_cost + edge_cost < getcost(new_node, dir))
 				{
                     if(dir == 1){
-                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
+//                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
                     }
                     else{
-                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
+//                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
                     }
-                    DBG("Koszt nowego %f \n", edge_cost);
+//                    DBG("Koszt nowego %f \n", edge_cost);
 					// explore the node, and push it in the queue
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
@@ -277,12 +277,12 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 				if(cur_cost + edge_cost < getcost(new_node, dir))
 				{
                     if(dir == 1){
-                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
+//                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
                     }
                     else{
-                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
+//                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
                     }
-                    DBG("Koszt nowego %f \n", edge_cost);
+//                    DBG("Koszt nowego %f \n", edge_cost);
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
@@ -312,7 +312,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	max_edge_id = -1;
 	
 	// Allocate memory for local storage like cost and parent holder
-    DBG("calling initall(maxNode=%d)\n", maxNode);
+//    DBG("calling initall(maxNode=%d)\n", maxNode);
 	initall(maxNode);
 
 	// construct the graph from the edge list, i.e. populate node and edge data structures
@@ -321,11 +321,11 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	
 
 	//int nodeCount = m_vecNodeVector.size();
-	DBG("Setting up std::priority_queue\n");
+//	DBG("Setting up std::priority_queue\n");
 	std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > fque;
 	std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > rque;
 	
-    DBG("calling m_vecPath.clear()\n");
+//    DBG("calling m_vecPath.clear()\n");
 	m_vecPath.clear();
 
 	// Initialize the forward search
@@ -339,7 +339,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	m_pRParent[end_vertex].par_Edge = -1;
 	m_pRCost[end_vertex] = 0.0;
 	rque.push(std::make_pair(0.0, end_vertex));
-
+    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
 	int i;
 	// int new_node;
 	int cur_node;
@@ -360,17 +360,17 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
             fTop = fque.top();
         if(!rque.empty())
             rTop = rque.top();
-        DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
+//        DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
 		if(fTop.first + rTop.first > m_MinCost) //We are done, there is no path with lower cost
         {
-            DBG("SKONCZYLISMY KOSZT: %f\n", m_MinCost);
+//            DBG("SKONCZYLISMY KOSZT: %f\n", m_MinCost);
 			break;
         }
         if(((rTop.first < fTop.first) || fque.empty()) && !rque.empty()) // Explore from reverse queue
 		{
 			cur_node = rTop.second;
             int dir = -1;
-            DBG("Wybieramy node BACKWARD %d o koszcie %f\n", cur_node+1, rTop.first);
+//            DBG("Wybieramy node BACKWARD %d o koszcie %f\n", cur_node+1, rTop.first);
             rque.pop();
             explore(cur_node, rTop.first, dir, rque);
 		}
@@ -378,7 +378,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 		{
 			cur_node = fTop.second;
             int dir = 1;
-            DBG("Wybieramy node FORWARD %d o koszcie %f\n", cur_node+1, fTop.first);
+//            DBG("Wybieramy node FORWARD %d o koszcie %f\n", cur_node+1, fTop.first);
             fque.pop();
             explore(cur_node, fTop.first, dir, fque);
 		}
@@ -410,10 +410,10 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 
 		// Transfer data path to path_element_t format and allocate memory and populate the pointer
 
-        DBG("BiDirDijkstra::bidir_dijkstra: allocating path m_vecPath.size=%d\n", m_vecPath.size() + 1);
+//        DBG("BiDirDijkstra::bidir_dijkstra: allocating path m_vecPath.size=%d\n", m_vecPath.size() + 1);
 		*path = (path_element_t *) malloc(sizeof(path_element_t) * (m_vecPath.size() + 1));
 		*path_count = m_vecPath.size();
-        DBG("BiDirDijkstra::bidir_dijkstra: allocated path\n");
+//        DBG("BiDirDijkstra::bidir_dijkstra: allocated path\n");
 
 		for(i = 0; i < *path_count; i++)
 		{
@@ -423,9 +423,9 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 		}
 		
 	}
-    DBG("calling deleteall\n");
+//    DBG("calling deleteall\n");
 	deleteall();
-    DBG("back from deleteall\n");
+//    DBG("back from deleteall\n");
 	return 0;
 }
 
@@ -440,17 +440,17 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 
 	/*
 	// Create a dummy node
-    DBG("Create a dummy node\n");
+//    DBG("Create a dummy node\n");
 	GraphNodeInfo nodeInfo;
-    DBG("calling nodeInfo.Connected_Edges_Index.clear\n");
+//    DBG("calling nodeInfo.Connected_Edges_Index.clear\n");
 	nodeInfo.Connected_Edges_Index.clear();
-    DBG("calling nodeInfo.Connected_Nodes.clear\n");
+//    DBG("calling nodeInfo.Connected_Nodes.clear\n");
 	nodeInfo.Connected_Nodes.clear();
 	*/
 
 	// Insert the dummy node into the node list. This acts as place holder. Also change the nodeId so that nodeId and node index in the vector are same.
 	// There may be some nodes here that does not appear in the edge list. The size of the list is upto maxNode which is equal to maximum node id.
-    DBG("m_vecNodeVector.push_back for 0 - %d\n", maxNode);
+//    DBG("m_vecNodeVector.push_back for 0 - %d\n", maxNode);
 	for(i = 0; i <= maxNode; i++)
 	{
 		// Create a dummy node
@@ -463,12 +463,12 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 	}
 
 	// Process each edge from the edge list and update the member data structures accordingly.
-    DBG("reserving space for m_vecEdgeVector.reserve(%d)\n", edge_count);
+//    DBG("reserving space for m_vecEdgeVector.reserve(%d)\n", edge_count);
     m_vecEdgeVector.reserve(edge_count);
-    DBG("calling addEdge in a loop\n");
+//    DBG("calling addEdge in a loop\n");
 	for(i = 0; i < edge_count; i++)
 	{
-        DBG("KOSZT: %f \n", edges[i].cost);
+//        DBG("KOSZT: %f \n", edges[i].cost);
 		addEdge(edges[i]);
 	}
 

@@ -42,7 +42,7 @@ Datum bidir_dijkstra_shortest_path(PG_FUNCTION_ARGS);
 
 
 #undef DEBUG
-#define DEBUG 1
+//#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(format, arg...)                     \
