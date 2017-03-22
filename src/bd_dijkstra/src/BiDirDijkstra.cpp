@@ -168,12 +168,12 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 	if(m_pFParent[node_id].par_Node == -1)
 		return;
 	fconstruct_path(m_pFParent[node_id].par_Node);
-    if(m_shortcutsTable.find(m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]) != m_shortcutsTable.end())
+    if(m_shortcutsTable.find(m_pFParent[node_id].par_Edge) != m_shortcutsTable.end())
 //        DBG("%d\n", m_shortcutsTable[m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]].size());
 //    if(0)
     {
         DBG("DODAJEMY SKRÓTY\n");
-        GraphEdgeVector& edgeVector = m_shortcutsTable[m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]];
+        GraphEdgeVector& edgeVector = m_shortcutsTable[m_pFParent[node_id].par_Edge];
         for(unsigned int i = 0;i < edgeVector.size(); ++i)
         {
             path_element_t pt;
@@ -222,10 +222,10 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 //        DBG("%d\n", m_shortcutsTable.size());
 //    if(0)
 
-    if(m_shortcutsTable.find(m_mapEdgeId2Index[m_pRParent[node_id].par_Edge]) != m_shortcutsTable.end())
+    if(m_shortcutsTable.find(m_pRParent[node_id].par_Edge) != m_shortcutsTable.end())
     {
         DBG("DODAJEMY SKROTY\n");
-        GraphEdgeVector& edgeVector = m_shortcutsTable[m_mapEdgeId2Index[m_pRParent[node_id].par_Edge]];
+        GraphEdgeVector& edgeVector = m_shortcutsTable[m_pRParent[node_id].par_Edge];
         for(unsigned int i = 0;i < edgeVector.size(); ++i)
         {
             if(edgeVector[i].Direction == 0)
@@ -606,14 +606,14 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
     }
     else
     {
-        DBG("Dodajemy edge dla indexu %d\n", newEdge.EdgeIndex);
+        DBG("Dodajemy edge dla indexu %d\n", newEdge.EdgeID);
         try{
-            if(m_shortcutsTable.find(newEdge.EdgeIndex) == m_shortcutsTable.end())
+            if(m_shortcutsTable.find(newEdge.EdgeID) == m_shortcutsTable.end())
             {
-                m_shortcutsTable[newEdge.EdgeIndex] = std::vector<GraphEdgeInfo>();
+                m_shortcutsTable[newEdge.EdgeID] = std::vector<GraphEdgeInfo>();
             }
-            m_shortcutsTable[newEdge.EdgeIndex].resize(newEdge.Shortcut);
-            m_shortcutsTable[newEdge.EdgeIndex].push_back(newEdge);
+            m_shortcutsTable[newEdge.EdgeID].resize(newEdge.Shortcut);
+            m_shortcutsTable[newEdge.EdgeID].push_back(newEdge);
         }
         catch(...){
             DBG("WYJONTEK\n");
