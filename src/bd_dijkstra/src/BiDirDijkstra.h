@@ -90,10 +90,11 @@ public:
 	int StartNode;
 	int EndNode;
 	bool incOrder;
+    int Shortcut;
 };
 
 typedef std::vector<GraphEdgeInfo> GraphEdgeVector;
-typedef std::vector<std::vector<GraphEdgeInfo> > ShortcutsTable;
+typedef std::map<int, std::vector<GraphEdgeInfo> > ShortcutsTable;
 typedef std::map<long,LongVector> Long2LongVectorMap;
 typedef std::map<long,long> Long2LongMap;
 typedef std::vector<GraphNodeInfo*> GraphNodeVector;
@@ -113,7 +114,7 @@ private:
 	bool construct_graph(edge_t *edges, int edge_count, int maxNode);
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
-	bool addEdge(edge edgeIn);
+    	bool addEdge(const edge& edgeIn);
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
 	void init();
 	void initall(int maxNode);

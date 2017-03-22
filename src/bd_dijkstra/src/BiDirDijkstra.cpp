@@ -480,7 +480,7 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 	connectivity information needs to be updated.
 */
 
-bool BiDirDijkstra::addEdge(edge_t edgeIn)
+bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
 {
 	// long lTest;
 
@@ -499,6 +499,7 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
 	newEdge.Cost = edgeIn.cost;
     newEdge.ReverseCost = edgeIn.cost;/*edgeIn.reverse_cost;*/
     newEdge.incOrder = edgeIn.incOrder;
+    newEdge.Shortcut = edgeIn.shortcut;
 //    DBG("INC %d DEC %d", Inc, Dec);
 	// Set the direction. If both cost and reverse cost has positive value the edge is bidirectional and direction field is 0. If cost is positive and reverse cost
 	// negative then the edge is unidirectional with direction = 1 (goes from source to target) otherwise it is unidirectional with direction = -1 (goes from target
@@ -533,20 +534,25 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
 		return false;//max_node_id = newEdge.EdgeIndex;
 	}
 
-	// update connectivity information for the start node.
-	m_vecNodeVector[newEdge.StartNode]->Connected_Nodes.push_back(newEdge.EndNode);
-	m_vecNodeVector[newEdge.StartNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
+    if(newEdge.Shortcut < 1)
+    {
+        // update connectivity information for the start node.
+        m_vecNodeVector[newEdge.StartNode]->Connected_Nodes.push_back(newEdge.EndNode);
+        m_vecNodeVector[newEdge.StartNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
 
-	// update connectivity information for the start node.
-	m_vecNodeVector[newEdge.EndNode]->Connected_Nodes.push_back(newEdge.StartNode);
-	m_vecNodeVector[newEdge.EndNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
+        // update connectivity information for the start node.
+        m_vecNodeVector[newEdge.EndNode]->Connected_Nodes.push_back(newEdge.StartNode);
+        m_vecNodeVector[newEdge.EndNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
 
 
-
-	//Adding edge to the list
-	m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
-	m_vecEdgeVector.push_back(newEdge);
-
+        //Adding edge to the list
+        m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
+        m_vecEdgeVector.push_back(newEdge);
+    }
+    else
+    {
+        m_shortcutsTable[newEdge.EdgeID].push_back(newEdge);
+    }
 	//
 	return true;
 }
