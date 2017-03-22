@@ -94,7 +94,7 @@ public:
 };
 
 typedef std::vector<GraphEdgeInfo> GraphEdgeVector;
-typedef std::map<int, std::vector<GraphEdgeInfo> > ShortcutsTable;
+typedef std::map<long, GraphEdgeVector> ShortcutsTable;
 typedef std::map<long,LongVector> Long2LongVectorMap;
 typedef std::map<long,long> Long2LongMap;
 typedef std::vector<GraphNodeInfo*> GraphNodeVector;

@@ -168,13 +168,16 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 	if(m_pFParent[node_id].par_Node == -1)
 		return;
 	fconstruct_path(m_pFParent[node_id].par_Node);
-    if(m_vecEdgeVector[node_id].Shortcut == 0)
+    if(m_shortcutsTable.find(m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]) != m_shortcutsTable.end())
+//        DBG("%d\n", m_shortcutsTable[m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]].size());
+//    if(0)
     {
-        GraphEdgeVector& edgeVector = m_shortcutsTable[node_id];
-        for(unsigned int i = 0;i < m_shortcutsTable.size(); ++i)
+        DBG("DODAJEMY SKRÓTY\n");
+        GraphEdgeVector& edgeVector = m_shortcutsTable[m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]];
+        for(unsigned int i = 0;i < edgeVector.size(); ++i)
         {
             path_element_t pt;
-            if(edgeVector[i].Direction)
+            if(edgeVector[i].Direction == 1)
             {
                 pt.vertex_id = edgeVector[i].StartNode;
                 pt.cost = edgeVector[i].Cost;
@@ -194,7 +197,9 @@ void BiDirDijkstra::fconstruct_path(int node_id)
         pt.vertex_id = m_pFParent[node_id].par_Node;
         pt.edge_id = m_pFParent[node_id].par_Edge;
         pt.cost = m_pFCost[node_id] - m_pFCost[m_pFParent[node_id].par_Node];
+//        DBG("Probujemy pushowac pt\n");
         m_vecPath.push_back(pt);
+//        DBG("Zpushowane\n");
     }
 }
 
@@ -213,10 +218,37 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 		pt.cost = 0.0;
 		return;
 	}
-	pt.vertex_id = node_id;
-	pt.cost = m_pRCost[node_id] - m_pRCost[m_pRParent[node_id].par_Node];
-	pt.edge_id = m_pRParent[node_id].par_Edge;
-	m_vecPath.push_back(pt);
+//    if(m_vecEdgeVector[node_id].Shortcut == 0)
+//        DBG("%d\n", m_shortcutsTable.size());
+//    if(0)
+
+    if(m_shortcutsTable.find(m_mapEdgeId2Index[m_pRParent[node_id].par_Edge]) != m_shortcutsTable.end())
+    {
+        DBG("DODAJEMY SKROTY\n");
+        GraphEdgeVector& edgeVector = m_shortcutsTable[m_mapEdgeId2Index[m_pRParent[node_id].par_Edge]];
+        for(unsigned int i = 0;i < edgeVector.size(); ++i)
+        {
+            if(edgeVector[i].Direction == 0)
+            {
+                pt.vertex_id = edgeVector[i].StartNode;
+                pt.cost = edgeVector[i].Cost;
+            }
+            else
+            {
+                pt.vertex_id = edgeVector[i].EndNode;
+                pt.cost = edgeVector[i].ReverseCost;
+            }
+            pt.edge_id = edgeVector[i].EdgeIndex;
+            m_vecPath.push_back(pt);
+        }
+    }
+    else
+    {
+        pt.vertex_id = node_id;
+        pt.cost = m_pRCost[node_id] - m_pRCost[m_pRParent[node_id].par_Node];
+        pt.edge_id = m_pRParent[node_id].par_Edge;
+        m_vecPath.push_back(pt);
+    }
 	rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
@@ -574,7 +606,19 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
     }
     else
     {
-        m_shortcutsTable[newEdge.EdgeID].push_back(newEdge);
+        DBG("Dodajemy edge dla indexu %d\n", newEdge.EdgeIndex);
+        try{
+            if(m_shortcutsTable.find(newEdge.EdgeIndex) == m_shortcutsTable.end())
+            {
+                m_shortcutsTable[newEdge.EdgeIndex] = std::vector<GraphEdgeInfo>();
+            }
+            m_shortcutsTable[newEdge.EdgeIndex].resize(newEdge.Shortcut);
+            m_shortcutsTable[newEdge.EdgeIndex].push_back(newEdge);
+        }
+        catch(...){
+            DBG("WYJONTEK\n");
+        }
+        DBG("Udalo sie\n");
     }
 	//
 	return true;
