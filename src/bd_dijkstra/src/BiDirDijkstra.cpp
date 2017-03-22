@@ -499,11 +499,6 @@ bool BiDirDijkstra::addEdge(edge_t edgeIn)
 	newEdge.Cost = edgeIn.cost;
     newEdge.ReverseCost = edgeIn.cost;/*edgeIn.reverse_cost;*/
     newEdge.incOrder = edgeIn.incOrder;
-    static unsigned int Inc = 0,Dec = 0;
-    if(edgeIn.incOrder)
-        Inc++;
-    else
-        Dec++;
 //    DBG("INC %d DEC %d", Inc, Dec);
 	// Set the direction. If both cost and reverse cost has positive value the edge is bidirectional and direction field is 0. If cost is positive and reverse cost
 	// negative then the edge is unidirectional with direction = 1 (goes from source to target) otherwise it is unidirectional with direction = -1 (goes from target
