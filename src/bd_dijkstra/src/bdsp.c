@@ -105,7 +105,7 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
   edge_columns->target = SPI_fnumber(SPI_tuptable->tupdesc, "target");
   edge_columns->cost = SPI_fnumber(SPI_tuptable->tupdesc, "cost");
   edge_columns->incOrder = SPI_fnumber(SPI_tuptable->tupdesc, "incorder");
-  edge_columns->incOrder = SPI_fnumber(SPI_tuptable->tupdesc, "shortcut");
+  edge_columns->shortcut = SPI_fnumber(SPI_tuptable->tupdesc, "shortcut");
   if (edge_columns->id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->source == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->target == SPI_ERROR_NOATTRIBUTE ||

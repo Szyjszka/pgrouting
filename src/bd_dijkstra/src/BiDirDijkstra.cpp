@@ -168,11 +168,34 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 	if(m_pFParent[node_id].par_Node == -1)
 		return;
 	fconstruct_path(m_pFParent[node_id].par_Node);
-	path_element_t pt;
-	pt.vertex_id = m_pFParent[node_id].par_Node;
-	pt.edge_id = m_pFParent[node_id].par_Edge;
-	pt.cost = m_pFCost[node_id] - m_pFCost[m_pFParent[node_id].par_Node];
-	m_vecPath.push_back(pt);
+    if(m_vecEdgeVector[node_id].Shortcut == 0)
+    {
+        GraphEdgeVector& edgeVector = m_shortcutsTable[node_id];
+        for(unsigned int i = 0;i < m_shortcutsTable.size(); ++i)
+        {
+            path_element_t pt;
+            if(edgeVector[i].Direction)
+            {
+                pt.vertex_id = edgeVector[i].StartNode;
+                pt.cost = edgeVector[i].Cost;
+            }
+            else
+            {
+                pt.vertex_id = edgeVector[i].EndNode;
+                pt.cost = edgeVector[i].ReverseCost;
+            }
+            pt.edge_id = edgeVector[i].EdgeIndex;
+            m_vecPath.push_back(pt);
+        }
+    }
+    else
+    {
+        path_element_t pt;
+        pt.vertex_id = m_pFParent[node_id].par_Node;
+        pt.edge_id = m_pFParent[node_id].par_Edge;
+        pt.cost = m_pFCost[node_id] - m_pFCost[m_pFParent[node_id].par_Node];
+        m_vecPath.push_back(pt);
+    }
 }
 
 /*
