@@ -167,27 +167,26 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 {
 	if(m_pFParent[node_id].par_Node == -1)
 		return;
-	fconstruct_path(m_pFParent[node_id].par_Node);
+    fconstruct_path(m_pFParent[node_id].par_Node);
+    DBG("Czy jest skrot z %d : %d\n",m_pFParent[node_id].par_Edge, m_shortcutsTable.find(m_pFParent[node_id].par_Edge) != m_shortcutsTable.end());
     if(m_shortcutsTable.find(m_pFParent[node_id].par_Edge) != m_shortcutsTable.end())
-//        DBG("%d\n", m_shortcutsTable[m_mapEdgeId2Index[m_pFParent[node_id].par_Edge]].size());
-//    if(0)
     {
-        DBG("DODAJEMY SKRÓTY\n");
+        DBG("Forward\n");
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pFParent[node_id].par_Edge];
         for(unsigned int i = 0;i < edgeVector.size(); ++i)
         {
+            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
             path_element_t pt;
-            if(edgeVector[i].Direction == 1)
+            if(edgeVector[i].Direction == 0)
             {
-                pt.vertex_id = edgeVector[i].StartNode;
                 pt.cost = edgeVector[i].Cost;
             }
             else
             {
-                pt.vertex_id = edgeVector[i].EndNode;
                 pt.cost = edgeVector[i].ReverseCost;
             }
-            pt.edge_id = edgeVector[i].EdgeIndex;
+            pt.vertex_id = edgeVector[i].EndNode;
+            pt.edge_id = edgeVector[i].EdgeID;
             m_vecPath.push_back(pt);
         }
     }
@@ -197,9 +196,7 @@ void BiDirDijkstra::fconstruct_path(int node_id)
         pt.vertex_id = m_pFParent[node_id].par_Node;
         pt.edge_id = m_pFParent[node_id].par_Edge;
         pt.cost = m_pFCost[node_id] - m_pFCost[m_pFParent[node_id].par_Node];
-//        DBG("Probujemy pushowac pt\n");
         m_vecPath.push_back(pt);
-//        DBG("Zpushowane\n");
     }
 }
 
@@ -217,28 +214,25 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 		pt.edge_id = -1;
 		pt.cost = 0.0;
 		return;
-	}
-//    if(m_vecEdgeVector[node_id].Shortcut == 0)
-//        DBG("%d\n", m_shortcutsTable.size());
-//    if(0)
-
+    }
+    DBG("Czy jest skrot z %d : %d\n",m_pRParent[node_id].par_Edge, m_shortcutsTable.find(m_pRParent[node_id].par_Edge) != m_shortcutsTable.end());
     if(m_shortcutsTable.find(m_pRParent[node_id].par_Edge) != m_shortcutsTable.end())
     {
-        DBG("DODAJEMY SKROTY\n");
+        DBG("Reverse\n");
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pRParent[node_id].par_Edge];
-        for(unsigned int i = 0;i < edgeVector.size(); ++i)
+        for(signed int i = edgeVector.size()-1;i >= 0; --i)
         {
-            if(edgeVector[i].Direction == 0)
+            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+            if(edgeVector[i].Direction == 1)
             {
-                pt.vertex_id = edgeVector[i].StartNode;
                 pt.cost = edgeVector[i].Cost;
             }
             else
             {
-                pt.vertex_id = edgeVector[i].EndNode;
                 pt.cost = edgeVector[i].ReverseCost;
             }
-            pt.edge_id = edgeVector[i].EdgeIndex;
+            pt.vertex_id = edgeVector[i].StartNode;
+            pt.edge_id = edgeVector[i].EdgeID;
             m_vecPath.push_back(pt);
         }
     }
@@ -540,9 +534,10 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
 	// long lTest;
 
 	// Check if the edge is already processed.
-	Long2LongMap::iterator itMap = m_mapEdgeId2Index.find(edgeIn.id);
-	if(itMap != m_mapEdgeId2Index.end())	
-		return false;
+//TODO Michal check
+//    Long2LongMap::iterator itMap = m_mapEdgeId2Index.find(edgeIn.id);
+//    if(itMap != m_mapEdgeId2Index.end() && edgeIn.shortcut < 1)
+//        return false;
 
 
 	// Create a GraphEdgeInfo using the information of the current edge
@@ -582,11 +577,13 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
 	//Update max_node_id
 	if(newEdge.StartNode > max_node_id)
 	{
-		return false;//max_node_id = newEdge.StartNode;
+//TODO Michal check
+        	max_node_id = newEdge.StartNode;
 	}
 	if(newEdge.EndNode > max_node_id)
 	{
-		return false;//max_node_id = newEdge.EdgeIndex;
+//TODO Michal check
+        	max_node_id = newEdge.EdgeIndex;
 	}
 
     if(newEdge.Shortcut < 1)
@@ -603,20 +600,28 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
         //Adding edge to the list
         m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
         m_vecEdgeVector.push_back(newEdge);
+        if(newEdge.Shortcut == -1)
+        {
+            DBG("Zwykly BEZ %d\n", newEdge.EdgeID);
+        }
+        else
+        {
+            DBG("Zwykly SKROTOWY %d\n", newEdge.EdgeID);
+        }
     }
     else
     {
-        DBG("Dodajemy edge dla indexu %d\n", newEdge.EdgeID);
+        const uint32_t parentID = newEdge.EdgeID - newEdge.Shortcut;
+        DBG("Dodajemy edge dla id %d start %d koniec %d\n", parentID, newEdge.StartNode, newEdge.EndNode);
         try{
-            if(m_shortcutsTable.find(newEdge.EdgeID) == m_shortcutsTable.end())
+            if(m_shortcutsTable.find(parentID) == m_shortcutsTable.end())
             {
-                m_shortcutsTable[newEdge.EdgeID] = std::vector<GraphEdgeInfo>();
+                m_shortcutsTable[parentID] = std::vector<GraphEdgeInfo>();
+                m_shortcutsTable[parentID].reserve(max_node_id);
             }
-            m_shortcutsTable[newEdge.EdgeID].resize(newEdge.Shortcut);
-            m_shortcutsTable[newEdge.EdgeID].push_back(newEdge);
+            m_shortcutsTable[parentID].push_back(newEdge);
         }
-        catch(...){
-            DBG("WYJONTEK\n");
+        catch(const std::exception &exc){
         }
         DBG("Udalo sie\n");
     }
