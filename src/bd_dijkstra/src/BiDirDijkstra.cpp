@@ -232,30 +232,25 @@ void BiDirDijkstra::rconstruct_path(int node_id)
         GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pRParent[node_id].par_Edge];
         DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
-        for(unsigned int i = 0;i < edgeVector.size(); ++i)
+        if(node_id == edgeInfo.StartNode)
+        for(signed int i = 0; i < edgeVector.size() ; ++i)
         {
             DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-
-            if(node_id == edgeInfo.StartNode)
-                for(signed int i = 0;i < edgeVector.size(); ++i)
-                {
-//                    DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-                    path_element_t pt;
-                    pt.cost = edgeVector[i].Cost;
-                    pt.vertex_id = edgeVector[i].StartNode;
-                    pt.edge_id = edgeVector[i].EdgeID;
-                    m_vecPath.push_back(pt);
-                }
-            else
-                for(signed int i = edgeVector.size()-1; i >= 0; --i)
-                {
-//                    DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-                    path_element_t pt;
-                    pt.cost = edgeVector[i].Cost;
-                    pt.vertex_id = edgeVector[i].StartNode;
-                    pt.edge_id = edgeVector[i].EdgeID;
-                    m_vecPath.push_back(pt);
-                }
+            path_element_t pt;
+            pt.cost = edgeVector[i].Cost;
+            pt.vertex_id = edgeVector[i].StartNode;
+            pt.edge_id = edgeVector[i].EdgeID;
+            m_vecPath.push_back(pt);
+        }
+        else
+        for(signed int i = edgeVector.size()-1; i >= 0; --i)
+        {
+            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+            path_element_t pt;
+            pt.cost = edgeVector[i].Cost;
+            pt.vertex_id = edgeVector[i].EndNode;
+            pt.edge_id = edgeVector[i].EdgeID;
+            m_vecPath.push_back(pt);
         }
     }
     else
