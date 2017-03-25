@@ -168,27 +168,35 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 	if(m_pFParent[node_id].par_Node == -1)
 		return;
     fconstruct_path(m_pFParent[node_id].par_Node);
-    DBG("Czy jest skrot z %d : %d\n",m_pFParent[node_id].par_Edge, m_shortcutsTable.find(m_pFParent[node_id].par_Edge) != m_shortcutsTable.end());
-    if(m_shortcutsTable.find(m_pFParent[node_id].par_Edge) != m_shortcutsTable.end())
+
+    const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
+    GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
+    DBG("Czy jest skrot z %d : %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end());
+    if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
         DBG("Forward\n");
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pFParent[node_id].par_Edge];
-        for(unsigned int i = 0;i < edgeVector.size(); ++i)
-        {
-            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-            path_element_t pt;
-            if(edgeVector[i].Direction == 0)
+         DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
+        if(node_id == edgeInfo.EndNode)
+            for(signed int i = 0;i < edgeVector.size(); ++i)
             {
+                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+                path_element_t pt;
                 pt.cost = edgeVector[i].Cost;
+                pt.vertex_id = edgeVector[i].StartNode;
+                pt.edge_id = edgeVector[i].EdgeID;
+                m_vecPath.push_back(pt);
             }
-            else
+        else
+            for(signed int i = edgeVector.size()-1; i >= 0; --i)
             {
-                pt.cost = edgeVector[i].ReverseCost;
+                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+                path_element_t pt;
+                pt.cost = edgeVector[i].Cost;
+                pt.vertex_id = edgeVector[i].EndNode;
+                pt.edge_id = edgeVector[i].EdgeID;
+                m_vecPath.push_back(pt);
             }
-            pt.vertex_id = edgeVector[i].EndNode;
-            pt.edge_id = edgeVector[i].EdgeID;
-            m_vecPath.push_back(pt);
-        }
     }
     else
     {
@@ -215,25 +223,39 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 		pt.cost = 0.0;
 		return;
     }
-    DBG("Czy jest skrot z %d : %d\n",m_pRParent[node_id].par_Edge, m_shortcutsTable.find(m_pRParent[node_id].par_Edge) != m_shortcutsTable.end());
-    if(m_shortcutsTable.find(m_pRParent[node_id].par_Edge) != m_shortcutsTable.end())
+
+    const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
+    DBG("Czy jest skrot z %d : %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end());
+    if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
         DBG("Reverse\n");
+        GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pRParent[node_id].par_Edge];
-        for(signed int i = edgeVector.size()-1;i >= 0; --i)
+        DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
+        for(unsigned int i = 0;i < edgeVector.size(); ++i)
         {
             DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-            if(edgeVector[i].Direction == 1)
-            {
-                pt.cost = edgeVector[i].Cost;
-            }
+
+            if(node_id == edgeInfo.StartNode)
+                for(signed int i = 0;i < edgeVector.size(); ++i)
+                {
+//                    DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+                    path_element_t pt;
+                    pt.cost = edgeVector[i].Cost;
+                    pt.vertex_id = edgeVector[i].StartNode;
+                    pt.edge_id = edgeVector[i].EdgeID;
+                    m_vecPath.push_back(pt);
+                }
             else
-            {
-                pt.cost = edgeVector[i].ReverseCost;
-            }
-            pt.vertex_id = edgeVector[i].StartNode;
-            pt.edge_id = edgeVector[i].EdgeID;
-            m_vecPath.push_back(pt);
+                for(signed int i = edgeVector.size()-1; i >= 0; --i)
+                {
+//                    DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+                    path_element_t pt;
+                    pt.cost = edgeVector[i].Cost;
+                    pt.vertex_id = edgeVector[i].StartNode;
+                    pt.edge_id = edgeVector[i].EdgeID;
+                    m_vecPath.push_back(pt);
+                }
         }
     }
     else
