@@ -171,7 +171,7 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    DBG("Czy jest skrot z %d : %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end());
+    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
     if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
         DBG("Forward\n");
@@ -224,8 +224,8 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 		return;
     }
 
-    const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
-    DBG("Czy jest skrot z %d : %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end());
+    const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
+    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
     if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
         DBG("Reverse\n");
