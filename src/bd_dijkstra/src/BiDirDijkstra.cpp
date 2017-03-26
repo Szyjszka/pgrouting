@@ -33,6 +33,7 @@
 #endif
 
 #include "BiDirDijkstra.h"
+#include "algorithm_time_measure.hpp"
 
 #undef DEBUG
 #define DEBUG
@@ -171,16 +172,16 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
+//    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
     if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
-        DBG("Forward\n");
+//        DBG("Forward\n");
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pFParent[node_id].par_Edge];
-         DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
+//         DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
         if(node_id == edgeInfo.EndNode)
             for(signed int i = 0;i < edgeVector.size(); ++i)
             {
-                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+//                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
                 path_element_t pt;
                 pt.cost = edgeVector[i].Cost;
                 pt.vertex_id = edgeVector[i].StartNode;
@@ -190,7 +191,7 @@ void BiDirDijkstra::fconstruct_path(int node_id)
         else
             for(signed int i = edgeVector.size()-1; i >= 0; --i)
             {
-                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+//                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
                 path_element_t pt;
                 pt.cost = edgeVector[i].Cost;
                 pt.vertex_id = edgeVector[i].EndNode;
@@ -225,17 +226,17 @@ void BiDirDijkstra::rconstruct_path(int node_id)
     }
 
     const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
-    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
+//    DBG("Czy jest skrot z %d : %d %d\n",edge_ID, m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
     if(m_shortcutsTable.find(edge_ID) != m_shortcutsTable.end())
     {
-        DBG("Reverse\n");
+//        DBG("Reverse\n");
         GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
         GraphEdgeVector& edgeVector = m_shortcutsTable[m_pRParent[node_id].par_Edge];
-        DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
+//        DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
         if(node_id == edgeInfo.StartNode)
         for(signed int i = 0; i < edgeVector.size() ; ++i)
         {
-            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+//            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
             path_element_t pt;
             pt.cost = edgeVector[i].Cost;
             pt.vertex_id = edgeVector[i].StartNode;
@@ -245,7 +246,7 @@ void BiDirDijkstra::rconstruct_path(int node_id)
         else
         for(signed int i = edgeVector.size()-1; i >= 0; --i)
         {
-            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
+//            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
             path_element_t pt;
             pt.cost = edgeVector[i].Cost;
             pt.vertex_id = edgeVector[i].EndNode;
@@ -382,7 +383,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	initall(maxNode);
 
 	// construct the graph from the edge list, i.e. populate node and edge data structures
-    DBG("Calling construct_graph\n");
+//    DBG("Calling construct_graph\n");
 	construct_graph(edges, edge_count, maxNode);
 	
 
@@ -406,6 +407,8 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	m_pRCost[end_vertex] = 0.0;
 	rque.push(std::make_pair(0.0, end_vertex));
     DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
+    RouterCH::AlgorithmTimeMeasure atm;
+    atm.startMeasurement();
 	int i;
 	// int new_node;
 	int cur_node;
@@ -492,6 +495,8 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 //    DBG("calling deleteall\n");
 	deleteall();
 //    DBG("back from deleteall\n");
+    atm.stopMeasurement();
+    DBG("Czas algorytmu CH: %f\n", atm.getMeanTime())
 	return 0;
 }
 
@@ -617,31 +622,16 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
         //Adding edge to the list
         m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
         m_vecEdgeVector.push_back(newEdge);
-        if(newEdge.Shortcut == -1)
-        {
-            DBG("Zwykly BEZ %d\n", newEdge.EdgeID);
-        }
-        else
-        {
-            DBG("Zwykly SKROTOWY %d\n", newEdge.EdgeID);
-        }
     }
     else
     {
         const uint32_t parentID = newEdge.EdgeID - newEdge.Shortcut;
-        DBG("Dodajemy edge dla id %d start %d koniec %d\n", parentID, newEdge.StartNode, newEdge.EndNode);
-        try{
             if(m_shortcutsTable.find(parentID) == m_shortcutsTable.end())
             {
                 m_shortcutsTable[parentID] = std::vector<GraphEdgeInfo>();
                 m_shortcutsTable[parentID].reserve(max_node_id);
             }
             m_shortcutsTable[parentID].push_back(newEdge);
-        }
-        catch(const std::exception &exc){
-        }
-        DBG("Udalo sie\n");
     }
-	//
 	return true;
 }

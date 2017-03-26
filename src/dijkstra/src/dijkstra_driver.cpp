@@ -37,7 +37,8 @@ extern "C" {
 #include "./../../common/src/pgr_types.h"
 #include "./../../common/src/postgres_connection.h"
 }
-#undef DEBUG
+//#undef DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -310,9 +311,6 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
     //  2) end_vertex is in the data_edges  DONE
     //  3) start and end_vertex are different DONE
 
-        RouterCH::AlgorithmTimeMeasure atm;
-        atm.startMeasurement();
-
     if (total_tuples == 1) {
       *ret_path = noPathFound3(-1, path_count, (*ret_path));
       *ret_path = NULL;
@@ -332,6 +330,11 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
     Pgr_dijkstra < DirectedGraph > digraph(gType, initial_size);
     Pgr_dijkstra < UndirectedGraph > undigraph(gType, initial_size);
 
+
+    DBG("Z %d do %d\n", start_vertex, end_vertex);
+    RouterCH::AlgorithmTimeMeasure atm;
+    atm.startMeasurement();
+
     if (directedFlag) {
       digraph.initialize_graph(data_edges, total_tuples);
       digraph.dijkstra(path, start_vertex, end_vertex);
@@ -340,8 +343,6 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
       undigraph.dijkstra(path, start_vertex, end_vertex);
     }
 
-    atm.stopMeasurement();
-   DBG("Dijkstra: Czas algorytmu %f \n", atm.getMeanTime());
 
     int count(path.path.size());
 
@@ -360,6 +361,9 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
 
     int sequence = 0;
     path.dpPrint(ret_path, sequence);
+
+    atm.stopMeasurement();
+    DBG("Dijkstra: Czas algorytmu %f \n", atm.getMeanTime());
 
     #if 1
     *err_msg = strdup("OK");
