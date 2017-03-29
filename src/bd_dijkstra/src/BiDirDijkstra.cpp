@@ -336,10 +336,12 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 			else
 				edge_cost = edge.Cost;
 
+//            DBG("edge.Direction == 0 %d edge_cost >= 0.0 %d \n", (edge.Direction == 0 , edge_cost >= 0.0))
 			// Check if the direction is valid for exploration
             if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
 			{
 
+//                DBG("Koszt rozpatrywanego wierzcholka %f a relaksowany %f\n", getcost(new_node, dir), cur_cost + edge_cost);
 				// Check if the current edge gives better result
 				if(cur_cost + edge_cost < getcost(new_node, dir))
 				{
@@ -430,7 +432,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
         if(!rque.empty())
             rTop = rque.top();
 //        DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
-		if(fTop.first + rTop.first > m_MinCost) //We are done, there is no path with lower cost
+        if(rTop.first > m_MinCost && fTop.first > m_MinCost) //We are done, there is no path with lower cost
         {
 //            DBG("SKONCZYLISMY KOSZT: %f\n", m_MinCost);
 			break;
