@@ -85,6 +85,7 @@ public:
 	int EdgeID;
 	int EdgeIndex;
 	int Direction;
+	int64_t osm_id;
 	double Cost;
 	double ReverseCost;
 	int StartNode;

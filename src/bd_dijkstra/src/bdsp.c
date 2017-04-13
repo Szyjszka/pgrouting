@@ -64,6 +64,7 @@ typedef struct edge_columns
   int source;
   int target;
   int cost;
+  int64_t osm_id;
   int reverse_cost;
   bool incOrder;
   int shortcut;
@@ -106,11 +107,13 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
   edge_columns->cost = SPI_fnumber(SPI_tuptable->tupdesc, "cost");
   edge_columns->incOrder = SPI_fnumber(SPI_tuptable->tupdesc, "incorder");
   edge_columns->shortcut = SPI_fnumber(SPI_tuptable->tupdesc, "shortcut");
+  edge_columns->osm_id = SPI_fnumber(SPI_tuptable->tupdesc, "osm_id");
   if (edge_columns->id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->source == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->target == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->incOrder == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->shortcut == SPI_ERROR_NOATTRIBUTE ||
+      edge_columns->osm_id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->cost == SPI_ERROR_NOATTRIBUTE) {
 
       elog(ERROR, "Error, query must return columns "
@@ -120,6 +123,7 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
 
   if (SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->source) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->target) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->osm_id) != INT8OID||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->incOrder) != BOOLOID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->cost) != FLOAT8OID) {
@@ -189,6 +193,11 @@ fetch_edge(HeapTuple *tuple, TupleDesc *tupdesc,
   binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->shortcut, &isnull);
   if (isnull) elog(ERROR, "target contains a null value");
   target_edge->shortcut = DatumGetInt32(binval);
+
+
+  binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->osm_id, &isnull);
+  if (isnull) elog(ERROR, "target contains a null value");
+  target_edge->osm_id = DatumGetInt64(binval);
 
   if (edge_columns->reverse_cost != -1) {
       binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->reverse_cost, 

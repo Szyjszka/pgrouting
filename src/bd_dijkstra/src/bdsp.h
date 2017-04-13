@@ -29,6 +29,7 @@ typedef struct edge
     int id;
     int source;
     int target;
+    int64_t osm_id;
     float8 cost;
     float8 reverse_cost;
     bool incOrder;
