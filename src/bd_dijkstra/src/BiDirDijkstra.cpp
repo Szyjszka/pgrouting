@@ -642,7 +642,8 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
                 m_shortcutsTable[parentID] = std::vector<GraphEdgeInfo>();
                 m_shortcutsTable[parentID].reserve(max_node_id);
             }
-            m_shortcutsTable[parentID].push_back(newEdge);
+            m_shortcutsTable[parentID].resize(std::max<size_t>(m_shortcutsTable[parentID].size(), newEdge.Shortcut));
+            m_shortcutsTable[parentID][newEdge.Shortcut - 1] = newEdge;
     }
 	return true;
 }
