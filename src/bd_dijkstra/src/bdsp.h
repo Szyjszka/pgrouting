@@ -34,6 +34,9 @@ typedef struct edge
     float8 reverse_cost;
     bool incOrder;
     int shortcut;
+    int shortcutID;
+    int shA;
+    int shB;
 } edge_t;
 
 

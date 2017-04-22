@@ -68,6 +68,9 @@ typedef struct edge_columns
   int reverse_cost;
   bool incOrder;
   int shortcut;
+  int shortcutID;
+  int shA;
+  int shB;
 } edge_columns_t;
 
 
@@ -107,12 +110,18 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
   edge_columns->cost = SPI_fnumber(SPI_tuptable->tupdesc, "cost");
   edge_columns->incOrder = SPI_fnumber(SPI_tuptable->tupdesc, "incorder");
   edge_columns->shortcut = SPI_fnumber(SPI_tuptable->tupdesc, "shortcut");
+  edge_columns->shortcutID = SPI_fnumber(SPI_tuptable->tupdesc, "shortcutid");
+  edge_columns->shA = SPI_fnumber(SPI_tuptable->tupdesc, "sha");
+  edge_columns->shB = SPI_fnumber(SPI_tuptable->tupdesc, "shb");
   edge_columns->osm_id = SPI_fnumber(SPI_tuptable->tupdesc, "osm_id");
   if (edge_columns->id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->source == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->target == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->incOrder == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->shortcut == SPI_ERROR_NOATTRIBUTE ||
+      edge_columns->shortcutID == SPI_ERROR_NOATTRIBUTE ||
+      edge_columns->shA == SPI_ERROR_NOATTRIBUTE ||
+      edge_columns->shB == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->osm_id == SPI_ERROR_NOATTRIBUTE ||
       edge_columns->cost == SPI_ERROR_NOATTRIBUTE) {
 
@@ -125,6 +134,10 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->target) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->osm_id) != INT8OID||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcutID) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shA) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shB) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->incOrder) != BOOLOID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->cost) != FLOAT8OID) {
 
@@ -194,6 +207,18 @@ fetch_edge(HeapTuple *tuple, TupleDesc *tupdesc,
   if (isnull) elog(ERROR, "target contains a null value");
   target_edge->shortcut = DatumGetInt32(binval);
 
+  binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->shortcutID, &isnull);
+  if (isnull) elog(ERROR, "target contains a null value");
+  target_edge->shortcutID = DatumGetInt32(binval);
+
+  binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->shA, &isnull);
+  if (isnull) elog(ERROR, "target contains a null value");
+  target_edge->shA = DatumGetInt32(binval);
+
+  binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->shB, &isnull);
+  if (isnull) elog(ERROR, "target contains a null value");
+  target_edge->shB = DatumGetInt32(binval);
+
 
   binval = SPI_getbinval(*tuple, *tupdesc, edge_columns->osm_id, &isnull);
   if (isnull) elog(ERROR, "target contains a null value");
@@ -220,7 +245,7 @@ static int compute_bidirsp(char* sql, int start_vertex,
   edge_t *edges = NULL;
   int total_tuples = 0;
   edge_columns_t edge_columns = {.id= -1, .source= -1, .target= -1, 
-                                 .cost= -1, .reverse_cost= -1, .incOrder = false, .shortcut = -2};
+                                 .cost= -1, .reverse_cost= -1, .incOrder = false, .shortcut = -2, .shortcutID = -1};
   int v_max_id=0;
   int v_min_id=INT_MAX;
 
