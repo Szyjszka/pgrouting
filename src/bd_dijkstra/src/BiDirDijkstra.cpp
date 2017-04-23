@@ -205,21 +205,19 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, bool direction)
     int edgeIndex = m_mapEdgeId2Index[edgeID];
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-    DBG("Unwrap shorctut, direction %d edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", direction, edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
-
     const uint32_t node_id =  direction ? edgeInfo.StartNode : edgeInfo.EndNode;
+    DBG("Unwrap shorctut, direction %d nodeID: %d edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", direction, node_id, edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
+
 
     if(direction)
     {
         if(shortcutInfo.shA != -1)
         {
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  direction);
+            int id = m_mapShortcut2Id[shortcutInfo.shA];
+            int index = m_mapEdgeId2Index[id];
+            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  edgeInfo.StartNode == node_id);
         }
-        if(shortcutInfo.shB != -1)
-        {
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  !direction);
-        }
-
         if(shortcutInfo.shA == -1 || shortcutInfo.shB == -1)
         {
             path_element_t pt;
@@ -228,9 +226,24 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, bool direction)
             pt.cost = 0;
             m_vecPath.push_back(pt);
         }
+        if(shortcutInfo.shB != -1)
+        {
+            int id = m_mapShortcut2Id[shortcutInfo.shB];
+            int index = m_mapEdgeId2Index[id];
+            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  edgeInfo.StartNode != node_id);
+        }
+
     }
     else
     {
+        if(shortcutInfo.shB != -1)
+        {
+            int id = m_mapShortcut2Id[shortcutInfo.shB];
+            int index = m_mapEdgeId2Index[id];
+            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  edgeInfo.StartNode == node_id);
+        }
         if(shortcutInfo.shA == -1 || shortcutInfo.shB == -1)
         {
             path_element_t pt;
@@ -239,13 +252,12 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, bool direction)
             pt.cost = 0;
             m_vecPath.push_back(pt);
         }
-        if(shortcutInfo.shB != -1)
-        {
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  !direction);
-        }
         if(shortcutInfo.shA != -1)
         {
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  direction);
+            int id = m_mapShortcut2Id[shortcutInfo.shA];
+            int index = m_mapEdgeId2Index[id];
+            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  edgeInfo.StartNode != node_id);
         }
     }
 
