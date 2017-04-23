@@ -94,8 +94,16 @@ public:
     int Shortcut;
 };
 
+struct ShortcutInfo
+{
+    int ShortcutID;
+    int shA;
+    int shB;
+};
+
 typedef std::vector<GraphEdgeInfo> GraphEdgeVector;
 typedef std::map<long, GraphEdgeVector> ShortcutsTable;
+typedef std::vector<ShortcutInfo> ShortcutInfos;
 typedef std::map<long,LongVector> Long2LongVectorMap;
 typedef std::map<long,long> Long2LongMap;
 typedef std::vector<GraphNodeInfo*> GraphNodeVector;
@@ -115,6 +123,7 @@ private:
 	bool construct_graph(edge_t *edges, int edge_count, int maxNode);
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
+    	void unwrapShortcut(int edgeId, bool direction);
     	bool addEdge(const edge& edgeIn);
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
 	void init();
@@ -130,7 +139,9 @@ private:
 	ShortcutsTable m_shortcutsTable;
 	Long2LongMap m_mapEdgeId2Index;
 	Long2LongVectorMap m_mapNodeId2Edge;
+    	Long2LongMap m_mapShortcut2Id;
 	GraphNodeVector m_vecNodeVector;
+    	ShortcutInfos m_shortcutsInfos;
 	int max_node_id;
 	int max_edge_id;
 	int m_lStartNodeId;

@@ -171,45 +171,9 @@ void BiDirDijkstra::fconstruct_path(int node_id)
     fconstruct_path(m_pFParent[node_id].par_Node);
 
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    const int64_t osm_id = edgeInfo.osm_id;
-    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
-    if(m_shortcutsTable.find(osm_id) != m_shortcutsTable.end())
-    {
-        GraphEdgeVector& edgeVector = m_shortcutsTable[osm_id];
-        DBG("Forward rozmiar %d\n", edgeVector.size());
-         DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
-        if(node_id == edgeInfo.EndNode)
-            for(signed int i = 0;i < edgeVector.size(); ++i)
-            {
-                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-                path_element_t pt;
-                pt.cost = edgeVector[i].Cost;
-                pt.vertex_id = edgeVector[i].StartNode;
-                pt.edge_id = edgeVector[i].EdgeID;
-                DBG("Dodano %d \n", pt.vertex_id);
-                m_vecPath.push_back(pt);
-            }
-        else
-            for(signed int i = edgeVector.size()-1; i >= 0; --i)
-            {
-                DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-                path_element_t pt;
-                pt.cost = edgeVector[i].Cost;
-                pt.vertex_id = edgeVector[i].EndNode;
-                pt.edge_id = edgeVector[i].EdgeID;
-                DBG("Dodano %d \n", pt.vertex_id);
-                m_vecPath.push_back(pt);
-            }
-    }
-    else
-    {
-        path_element_t pt;
-        pt.vertex_id = m_pFParent[node_id].par_Node;
-        pt.edge_id = m_pFParent[node_id].par_Edge;
-        pt.cost = m_pFCost[node_id] - m_pFCost[m_pFParent[node_id].par_Node];
-        m_vecPath.push_back(pt);
-    }
+    unwrapShortcut(edge_ID, false);
+//    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
+
 }
 
 /*
@@ -229,48 +193,51 @@ void BiDirDijkstra::rconstruct_path(int node_id)
     }
 
     const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    const int64_t osm_id = edgeInfo.osm_id;
-    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
-    if(m_shortcutsTable.find(osm_id) != m_shortcutsTable.end())
+    unwrapShortcut(edge_ID, true);
+
+    rconstruct_path(m_pRParent[node_id].par_Node);
+}
+
+void BiDirDijkstra::unwrapShortcut(int edgeID, bool direction)
+{
+    int edgeIndex = m_mapEdgeId2Index[edgeID];
+    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
+    DBG("Unwrap shorctut, edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
+
+    if(direction)
     {
-        GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-        GraphEdgeVector& edgeVector = m_shortcutsTable[osm_id];
-        DBG("Reverse %d\n", edgeVector.size());
-        DBG("node_id %d start %d end %d", node_id, edgeInfo.StartNode, edgeInfo.EndNode)
-        if(node_id == edgeInfo.StartNode)
-        for(signed int i = 0; i < edgeVector.size() ; ++i)
+        if(shortcutInfo.shA != -1)
         {
-            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-            path_element_t pt;
-            pt.cost = edgeVector[i].Cost;
-            pt.vertex_id = edgeVector[i].StartNode;
-            pt.edge_id = edgeVector[i].EdgeID;
-            DBG("Dodano %d \n", pt.vertex_id);
-            m_vecPath.push_back(pt);
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], direction);
         }
-        else
-        for(signed int i = edgeVector.size()-1; i >= 0; --i)
+        if(shortcutInfo.shB != -1)
         {
-            DBG("Skrót %d dla id %d start %d koniec %d\n", i, edgeVector[i].EdgeIndex, edgeVector[i].StartNode, edgeVector[i].EndNode);
-            path_element_t pt;
-            pt.cost = edgeVector[i].Cost;
-            pt.vertex_id = edgeVector[i].EndNode;
-            pt.edge_id = edgeVector[i].EdgeID;
-            DBG("Dodano %d \n", pt.vertex_id);
-            m_vecPath.push_back(pt);
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], direction);
         }
     }
     else
     {
+        if(shortcutInfo.shB != -1)
+        {
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], direction);
+        }
+        if(shortcutInfo.shA != -1)
+        {
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], direction);
+        }
+    }
+
+    if(shortcutInfo.shA == -1 || shortcutInfo.shB == -1)
+    {
+        path_element_t pt;
+        const uint32_t node_id =  direction ? m_vecEdgeVector[edgeIndex].StartNode : m_vecEdgeVector[edgeIndex].EndNode;
         pt.vertex_id = node_id;
-        pt.cost = m_pRCost[node_id] - m_pRCost[m_pRParent[node_id].par_Node];
-        pt.edge_id = m_pRParent[node_id].par_Edge;
+        pt.edge_id = edgeID;
+        pt.cost = 0;
         m_vecPath.push_back(pt);
     }
-	rconstruct_path(m_pRParent[node_id].par_Node);
-}
 
+}
 /*
 	This is the main exploration module. The parameter dir indicates whether the exploration will be in forward or reverser direction. The reference to the corresponding
 	que is also passed as parameter que. The current node and the current costs are also available as parameter.
@@ -618,6 +585,15 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
         	max_node_id = newEdge.EdgeIndex;
 	}
 
+    ShortcutInfo info;
+    info.shA = edgeIn.shA;
+    info.shB = edgeIn.shB;
+    info.ShortcutID = edgeIn.shortcutID;
+    m_shortcutsInfos.push_back(info);
+
+    m_mapShortcut2Id[info.ShortcutID] = newEdge.EdgeID;
+    DBG("mapa %d %d \n", info.ShortcutID, newEdge.EdgeID);
+
     if(newEdge.Shortcut < 1)
     {
         // update connectivity information for the start node.
@@ -636,7 +612,7 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
     else
     {
         const uint32_t parentID = newEdge.osm_id;//newEdge.EdgeID - newEdge.Shortcut;
-        DBG("DODANO DO MAPY DLA %d SKROT %d\n", parentID, newEdge.EdgeID);
+//        DBG("DODANO DO MAPY DLA %d SKROT %d\n", parentID, newEdge.EdgeID);
             if(m_shortcutsTable.find(parentID) == m_shortcutsTable.end())
             {
                 m_shortcutsTable[parentID] = std::vector<GraphEdgeInfo>();
