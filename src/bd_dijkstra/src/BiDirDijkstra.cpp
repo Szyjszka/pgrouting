@@ -172,7 +172,8 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    unwrapShortcut(edge_ID, node_id != edgeInfo.StartNode);
+    DBG("FORWARD\n");
+    unwrapShortcut(edge_ID,  node_id != edgeInfo.StartNode);
 //    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
 
 }
@@ -195,72 +196,72 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    unwrapShortcut(edge_ID, node_id == edgeInfo.StartNode);
+    DBG("REVERSE\n");
+    unwrapShortcut(edge_ID, node_id != edgeInfo.EndNode);
 
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
-void BiDirDijkstra::unwrapShortcut(int edgeID, bool direction)
+void BiDirDijkstra::unwrapShortcut(int edgeID, bool forward)
 {
     int edgeIndex = m_mapEdgeId2Index[edgeID];
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-    const uint32_t node_id =  direction ? edgeInfo.StartNode : edgeInfo.EndNode;
-    DBG("Unwrap shorctut, direction %d nodeID: %d edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", direction, node_id, edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
+    const uint32_t startNode =  forward ? edgeInfo.StartNode : edgeInfo.EndNode;
+    const uint32_t endNode =  !forward ? edgeInfo.StartNode : edgeInfo.EndNode;
+    DBG("Unwrap shorctut, direction %d nodeID: %d edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", forward, startNode, edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
 
+    DBG("Start %d End %d \n" , startNode, endNode);
 
-    if(direction)
+    int Aid = m_mapShortcut2Id[shortcutInfo.shA];
+    int Bid = m_mapShortcut2Id[shortcutInfo.shB];
+    int Aindex = m_mapEdgeId2Index[Aid];
+    int Bindex = m_mapEdgeId2Index[Bid];
+    GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
+    GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
+
+    if(shortcutInfo.shB != -1 && shortcutInfo.shA != -1)
     {
-        if(shortcutInfo.shA != -1)
+        if(AedgeInfo.StartNode == startNode)
         {
-            int id = m_mapShortcut2Id[shortcutInfo.shA];
-            int index = m_mapEdgeId2Index[id];
-            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  edgeInfo.StartNode == node_id);
+            DBG("1 opcja\n");
+           unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], forward);
+           unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], forward);
         }
-        if(shortcutInfo.shA == -1 || shortcutInfo.shB == -1)
+        else if(AedgeInfo.EndNode == startNode)
         {
-            path_element_t pt;
-            pt.vertex_id = node_id;
-            pt.edge_id = edgeID;
-            pt.cost = 0;
-            m_vecPath.push_back(pt);
+            DBG("2 opcja\n");
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], forward);
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], forward);
         }
-        if(shortcutInfo.shB != -1)
+        else if(BedgeInfo.StartNode == startNode)
         {
-            int id = m_mapShortcut2Id[shortcutInfo.shB];
-            int index = m_mapEdgeId2Index[id];
-            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  edgeInfo.StartNode != node_id);
+            DBG("3 opcja\n");
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], !forward);
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], !forward);
         }
-
+        else if(BedgeInfo.EndNode == startNode)
+        {
+            DBG("4 opcja\n");
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], !forward);
+            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], !forward);
+        }
+        else
+        {
+            DBG("WTF ??? !!!\n");
+            DBG("Start %d End %d A start %d end %d B start %d end %d", startNode, endNode, AedgeInfo.StartNode, AedgeInfo.EndNode,
+                BedgeInfo.StartNode, BedgeInfo.EndNode)
+        }
     }
     else
     {
-        if(shortcutInfo.shB != -1)
-        {
-            int id = m_mapShortcut2Id[shortcutInfo.shB];
-            int index = m_mapEdgeId2Index[id];
-            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB],  edgeInfo.StartNode == node_id);
-        }
-        if(shortcutInfo.shA == -1 || shortcutInfo.shB == -1)
-        {
-            path_element_t pt;
-            pt.vertex_id = node_id;
-            pt.edge_id = edgeID;
-            pt.cost = 0;
-            m_vecPath.push_back(pt);
-        }
-        if(shortcutInfo.shA != -1)
-        {
-            int id = m_mapShortcut2Id[shortcutInfo.shA];
-            int index = m_mapEdgeId2Index[id];
-            GraphEdgeInfo edgeInfo = m_vecEdgeVector[index];
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA],  edgeInfo.StartNode != node_id);
-        }
+        path_element_t pt;
+        pt.vertex_id = startNode;
+        pt.edge_id = edgeID;
+        pt.cost = 0;
+        m_vecPath.push_back(pt);
+        DBG("Dodano %d \n", pt.vertex_id);
     }
-
 
 }
 /*
