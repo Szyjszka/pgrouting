@@ -124,6 +124,7 @@ private:
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
         void unwrapShortcut(int edgeId, int start_node);
+        void unwrapShortcutR(int edgeId, int start_node);
     	bool addEdge(const edge& edgeIn);
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
 	void init();

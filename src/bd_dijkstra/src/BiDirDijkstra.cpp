@@ -199,11 +199,7 @@ void BiDirDijkstra::rconstruct_path(int node_id)
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
     DBG("REVERSE\n");
 
-    pt.vertex_id = edgeInfo.StartNode == node_id ? edgeInfo.StartNode : edgeInfo.EndNode;
-    pt.edge_id = edge_ID;
-    pt.cost = 0.0;
-    m_vecPath.push_back(pt);
-//    unwrapShortcut(edge_ID, node_id != edgeInfo.EndNode);
+    unwrapShortcutR(edge_ID, node_id);
 
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
@@ -239,6 +235,40 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int start_node)
         unwrapShortcut(secondEdge.EdgeID, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
                                                secondEdge.EndNode : secondEdge.StartNode);
         unwrapShortcut(firstEdge.EdgeID, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
+    }
+}
+
+void BiDirDijkstra::unwrapShortcutR(int edgeID, int start_node)
+{
+    int edgeIndex = m_mapEdgeId2Index[edgeID];
+    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
+    GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
+
+    int Aid = m_mapShortcut2Id[shortcutInfo.shA];
+    int Bid = m_mapShortcut2Id[shortcutInfo.shB];
+    int Aindex = m_mapEdgeId2Index[Aid];
+    int Bindex = m_mapEdgeId2Index[Bid];
+    GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
+    GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
+
+    GraphEdgeInfo& firstEdge = start_node == AedgeInfo.StartNode || start_node == AedgeInfo.EndNode ?
+                AedgeInfo : BedgeInfo;
+    GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
+                 BedgeInfo : AedgeInfo;
+
+    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
+    {
+        path_element_t pt;
+        pt.vertex_id = edgeInfo.StartNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
+        pt.edge_id = edgeID;
+        pt.cost = edgeInfo.Cost;
+        m_vecPath.push_back(pt);
+    }
+    else
+    {
+        unwrapShortcut(firstEdge.EdgeID, firstEdge.StartNode == start_node ? firstEdge.EndNode : firstEdge.StartNode);
+        unwrapShortcut(secondEdge.EdgeID, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
+                                               secondEdge.StartNode : secondEdge.EndNode);
     }
 }
 /*
