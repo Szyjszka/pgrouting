@@ -67,10 +67,10 @@ typedef struct edge_columns
   int64_t osm_id;
   int reverse_cost;
   bool incOrder;
-  int shortcut;
-  int shortcutID;
-  int shA;
-  int shB;
+  int64_t shortcut;
+  int64_t shortcutID;
+  int64_t shA;
+  int64_t shB;
 } edge_columns_t;
 
 
@@ -133,11 +133,11 @@ fetch_edge_columns(SPITupleTable *tuptable, edge_columns_t *edge_columns,
   if (SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->source) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->target) != INT4OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->osm_id) != INT8OID||
-      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT4OID ||
-      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT4OID ||
-      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcutID) != INT4OID ||
-      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shA) != INT4OID ||
-      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shB) != INT4OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT8OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcut) != INT8OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shortcutID) != INT8OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shA) != INT8OID ||
+      SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->shB) != INT8OID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->incOrder) != BOOLOID ||
       SPI_gettypeid(SPI_tuptable->tupdesc, edge_columns->cost) != FLOAT8OID) {
 

@@ -642,6 +642,7 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
         m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
         m_vecEdgeVector.push_back(newEdge);
     }
+    //TODO To be deleted
     else
     {
         const uint32_t parentID = newEdge.osm_id;//newEdge.EdgeID - newEdge.Shortcut;
