@@ -173,7 +173,8 @@ void BiDirDijkstra::fconstruct_path(int node_id)
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
     DBG("FORWARD\n");
-    unwrapShortcut(edge_ID,  node_id != edgeInfo.StartNode);
+
+    unwrapShortcut(edge_ID,  node_id);
 //    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
 
 }
@@ -197,21 +198,21 @@ void BiDirDijkstra::rconstruct_path(int node_id)
     const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
     DBG("REVERSE\n");
-    unwrapShortcut(edge_ID, node_id != edgeInfo.EndNode);
+
+    pt.vertex_id = edgeInfo.StartNode == node_id ? edgeInfo.StartNode : edgeInfo.EndNode;
+    pt.edge_id = edge_ID;
+    pt.cost = 0.0;
+    m_vecPath.push_back(pt);
+//    unwrapShortcut(edge_ID, node_id != edgeInfo.EndNode);
 
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
-void BiDirDijkstra::unwrapShortcut(int edgeID, bool forward)
+void BiDirDijkstra::unwrapShortcut(int edgeID, int start_node)
 {
     int edgeIndex = m_mapEdgeId2Index[edgeID];
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-    const uint32_t startNode =  forward ? edgeInfo.StartNode : edgeInfo.EndNode;
-    const uint32_t endNode =  !forward ? edgeInfo.StartNode : edgeInfo.EndNode;
-    DBG("Unwrap shorctut, direction %d nodeID: %d edgeID: %d edgeIndex : %d  shA: %d shB: %d \n", forward, startNode, edgeID, edgeIndex, shortcutInfo.shA, shortcutInfo.shB);
-
-    DBG("Start %d End %d \n" , startNode, endNode);
 
     int Aid = m_mapShortcut2Id[shortcutInfo.shA];
     int Bid = m_mapShortcut2Id[shortcutInfo.shB];
@@ -220,49 +221,25 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, bool forward)
     GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
     GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
 
-    if(shortcutInfo.shB != -1 && shortcutInfo.shA != -1)
+    GraphEdgeInfo& firstEdge = start_node == AedgeInfo.StartNode || start_node == AedgeInfo.EndNode ?
+                AedgeInfo : BedgeInfo;
+    GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
+                 BedgeInfo : AedgeInfo;
+
+    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
     {
-        if(AedgeInfo.StartNode == startNode)
-        {
-            DBG("1 opcja\n");
-           unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], forward);
-           unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], forward);
-        }
-        else if(AedgeInfo.EndNode == startNode)
-        {
-            DBG("2 opcja\n");
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], forward);
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], forward);
-        }
-        else if(BedgeInfo.StartNode == startNode)
-        {
-            DBG("3 opcja\n");
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], !forward);
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], !forward);
-        }
-        else if(BedgeInfo.EndNode == startNode)
-        {
-            DBG("4 opcja\n");
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shA], !forward);
-            unwrapShortcut(m_mapShortcut2Id[shortcutInfo.shB], !forward);
-        }
-        else
-        {
-            DBG("WTF ??? !!!\n");
-            DBG("Start %d End %d A start %d end %d B start %d end %d", startNode, endNode, AedgeInfo.StartNode, AedgeInfo.EndNode,
-                BedgeInfo.StartNode, BedgeInfo.EndNode)
-        }
+        path_element_t pt;
+        pt.vertex_id = edgeInfo.EndNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
+        pt.edge_id = edgeID;
+        pt.cost = edgeInfo.Cost;
+        m_vecPath.push_back(pt);
     }
     else
     {
-        path_element_t pt;
-        pt.vertex_id = startNode;
-        pt.edge_id = edgeID;
-        pt.cost = 0;
-        m_vecPath.push_back(pt);
-        DBG("Dodano %d \n", pt.vertex_id);
+        unwrapShortcut(secondEdge.EdgeID, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
+                                               secondEdge.EndNode : secondEdge.StartNode);
+        unwrapShortcut(firstEdge.EdgeID, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
     }
-
 }
 /*
 	This is the main exploration module. The parameter dir indicates whether the exploration will be in forward or reverser direction. The reference to the corresponding

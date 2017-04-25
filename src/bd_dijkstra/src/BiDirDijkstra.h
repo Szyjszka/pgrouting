@@ -123,7 +123,7 @@ private:
 	bool construct_graph(edge_t *edges, int edge_count, int maxNode);
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
-        void unwrapShortcut(int edgeId, bool forward);
+        void unwrapShortcut(int edgeId, int start_node);
     	bool addEdge(const edge& edgeIn);
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
 	void init();
