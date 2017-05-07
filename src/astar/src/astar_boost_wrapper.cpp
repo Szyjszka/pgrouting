@@ -33,11 +33,27 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 
+#include "algorithm_time_measure.hpp"
 #include <cmath>    // for sqrt
 #include "astar.h"
 
 using namespace std;
 using namespace boost;
+
+#define DEBUG
+
+#ifdef DEBUG
+#include <stdio.h>
+static FILE *dbg;
+#define DBG(format, arg...) \
+    dbg = fopen("/tmp/sew-debug", "a"); \
+    if (dbg) { \
+        fprintf(dbg, format,  ## arg); \
+        fclose(dbg); \
+    }
+#else
+#define DBG(format, arg...) do { ; } while (0)
+#endif
 
 // Maximal number of nodes in the path (to avoid infinite loops)
 #define MAX_NODES 100000000
@@ -204,6 +220,8 @@ try {
 
   std::vector<float8> distances(num_vertices(graph));
 
+  RouterCH::AlgorithmTimeMeasure atm;
+  atm.startMeasurement();
   try {
     // Call A* named parameter interface
     astar_search
@@ -213,7 +231,6 @@ try {
        weight_map(get(&Edge::cost, graph)).
        distance_map(&distances[0]).
        visitor(astar_goal_visitor<vertex_descriptor>(target_vertex)));
-
   } 
   catch(found_goal& fg) {
     // Target vertex found
@@ -286,6 +303,8 @@ try {
         (*path)[j].cost = cost;
     }
 
+    atm.stopMeasurement();
+    DBG("ASTAR: Czas algorytmu %f \n", atm.getMeanTime());
     return EXIT_SUCCESS;
   }
  }
