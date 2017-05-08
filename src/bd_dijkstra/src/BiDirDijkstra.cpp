@@ -172,7 +172,7 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    DBG("FORWARD\n");
+//    DBG("FORWARD\n");
 
     unwrapShortcut(edge_ID,  node_id);
 //    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
@@ -197,7 +197,7 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 
     const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
-    DBG("REVERSE\n");
+//    DBG("REVERSE\n");
 
     unwrapShortcutR(edge_ID, node_id);
 
@@ -498,14 +498,14 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 			(*path)[i].vertex_id = m_vecPath[i].vertex_id;
 			(*path)[i].edge_id = m_vecPath[i].edge_id;
 			(*path)[i].cost = m_vecPath[i].cost;
-		}
-		
+        }
+
+        atm.stopMeasurement();
+        DBG("Czas algorytmu CH: %f\n", atm.getMeanTime())
 	}
 //    DBG("calling deleteall\n");
 	deleteall();
 //    DBG("back from deleteall\n");
-    atm.stopMeasurement();
-    DBG("Czas algorytmu CH: %f\n", atm.getMeanTime())
 	return 0;
 }
 
