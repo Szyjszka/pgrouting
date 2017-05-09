@@ -197,7 +197,7 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 
 //    DBG("REVERSE\n");
 
-    unwrapShortcut(m_pRParent[node_id].par_Edge, m_pRParent[node_id].par_EdgeIndex, node_id);
+    unwrapShortcutR(m_pRParent[node_id].par_Edge,  m_pRParent[node_id].par_EdgeIndex, node_id);
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
@@ -230,6 +230,37 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int edgeIndex,int start_node)
         unwrapShortcut(secondEdge.EdgeID, secondEdge.EdgeIndex, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
                                                secondEdge.EndNode : secondEdge.StartNode);
         unwrapShortcut(firstEdge.EdgeID, firstEdge.EdgeIndex, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
+    }
+}
+
+void BiDirDijkstra::unwrapShortcutR(int edgeID, int edgeIndex, int start_node)
+{
+    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
+    GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
+
+    int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
+    int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
+    GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
+    GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
+
+    GraphEdgeInfo& firstEdge = start_node == AedgeInfo.StartNode || start_node == AedgeInfo.EndNode ?
+                AedgeInfo : BedgeInfo;
+    GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
+                 BedgeInfo : AedgeInfo;
+
+    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
+    {
+        path_element_t pt;
+        pt.vertex_id = edgeInfo.StartNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
+        pt.edge_id = edgeID;
+        pt.cost = edgeInfo.Cost;
+        m_vecPath.push_back(pt);
+    }
+    else
+    {
+        unwrapShortcut(firstEdge.EdgeID, firstEdge.EdgeIndex, firstEdge.StartNode == start_node ? firstEdge.EndNode : firstEdge.StartNode);
+        unwrapShortcut(secondEdge.EdgeID, secondEdge.EdgeIndex, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
+                                               secondEdge.StartNode : secondEdge.EndNode);
     }
 }
 

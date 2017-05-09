@@ -135,6 +135,7 @@ private:
 	double getcost(int node_id, int dir);
 	void setcost(int node_id, int dir, double c);
 	void setparent(const int node_id, const int dir, const int parnode, const int paredge, const int paredgeindex);
+    void unwrapShortcutR(int edgeID, int edgeIndex, int start_node);
 
 private:
 	GraphEdgeVector m_vecEdgeVector;
