@@ -126,6 +126,7 @@ private:
         void unwrapShortcut(int edgeId, int start_node);
         void unwrapShortcutR(int edgeId, int start_node);
     	bool addEdge(const edge& edgeIn);
+        void addShortcutsIndexes();
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
 	void init();
 	void initall(int maxNode);
@@ -133,7 +134,7 @@ private:
 	void explore(int cur_node, double cur_cost, int dir, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
 	double getcost(int node_id, int dir);
 	void setcost(int node_id, int dir, double c);
-	void setparent(int node_id, int dir, int parnode, int paredge);
+    void setparent(int node_id, int dir, int parnode, int paredge);
 
 private:
 	GraphEdgeVector m_vecEdgeVector;
@@ -143,6 +144,16 @@ private:
     	Long2LongMap m_mapShortcut2Id;
 	GraphNodeVector m_vecNodeVector;
     	ShortcutInfos m_shortcutsInfos;
+
+    //For every index stores it's shortcuts
+    struct ShortcutIndexes{
+        uint32_t shAIndex, shBIndex;
+    };
+
+    typedef std::vector<ShortcutIndexes> ShortcutVec;
+
+    ShortcutVec m_ShortcutVec;
+
 	int max_node_id;
 	int max_edge_id;
 	int m_lStartNodeId;

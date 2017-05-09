@@ -210,10 +210,9 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int start_node)
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
 
-    int Aid = m_mapShortcut2Id[shortcutInfo.shA];
-    int Bid = m_mapShortcut2Id[shortcutInfo.shB];
-    int Aindex = m_mapEdgeId2Index[Aid];
-    int Bindex = m_mapEdgeId2Index[Bid];
+
+    int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
+    int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
     GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
     GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
 
@@ -244,10 +243,8 @@ void BiDirDijkstra::unwrapShortcutR(int edgeID, int start_node)
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
 
-    int Aid = m_mapShortcut2Id[shortcutInfo.shA];
-    int Bid = m_mapShortcut2Id[shortcutInfo.shB];
-    int Aindex = m_mapEdgeId2Index[Aid];
-    int Bindex = m_mapEdgeId2Index[Bid];
+    int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
+    int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
     GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
     GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
 
@@ -552,6 +549,8 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 		addEdge(edges[i]);
 	}
 
+    addShortcutsIndexes();
+
 	return true;
 }
 
@@ -559,6 +558,26 @@ bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 	Process the edge and populate the member nodelist and edgelist. The nodelist already contains upto maxNode dummy entries with nodeId same as index. Now the
 	connectivity information needs to be updated.
 */
+
+
+void BiDirDijkstra::addShortcutsIndexes()
+{
+    m_ShortcutVec.resize(m_vecEdgeVector.size());
+
+    for(unsigned int i = 0; i < m_vecEdgeVector.size(); ++i)
+    {
+        uint32_t edgeIndex = m_vecEdgeVector[i].EdgeIndex;
+        ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
+        int Aid = m_mapShortcut2Id[shortcutInfo.shA];
+        int Bid = m_mapShortcut2Id[shortcutInfo.shB];
+        int Aindex = m_mapEdgeId2Index[Aid];
+        int Bindex = m_mapEdgeId2Index[Bid];
+
+        m_ShortcutVec[edgeIndex].shAIndex = Aindex;
+        m_ShortcutVec[edgeIndex].shBIndex = Bindex;
+    }
+
+}
 
 bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
 {
@@ -641,19 +660,6 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
         //Adding edge to the list
         m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
         m_vecEdgeVector.push_back(newEdge);
-    }
-    //TODO To be deleted
-    else
-    {
-        const uint32_t parentID = newEdge.osm_id;//newEdge.EdgeID - newEdge.Shortcut;
-//        DBG("DODANO DO MAPY DLA %d SKROT %d\n", parentID, newEdge.EdgeID);
-            if(m_shortcutsTable.find(parentID) == m_shortcutsTable.end())
-            {
-                m_shortcutsTable[parentID] = std::vector<GraphEdgeInfo>();
-                m_shortcutsTable[parentID].reserve(max_node_id);
-            }
-            m_shortcutsTable[parentID].resize(std::max<size_t>(m_shortcutsTable[parentID].size(), newEdge.Shortcut));
-            m_shortcutsTable[parentID][newEdge.Shortcut - 1] = newEdge;
     }
 	return true;
 }
