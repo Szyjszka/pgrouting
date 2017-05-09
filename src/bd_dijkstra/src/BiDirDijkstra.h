@@ -71,6 +71,7 @@ typedef struct path_element
 typedef struct{
 	int par_Node;
 	int par_Edge;
+	int par_EdgeIndex;
 }PARENT_PATH;
 
 typedef struct{
@@ -123,8 +124,7 @@ private:
 	bool construct_graph(edge_t *edges, int edge_count, int maxNode);
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
-        void unwrapShortcut(int edgeId, int start_node);
-        void unwrapShortcutR(int edgeId, int start_node);
+        void unwrapShortcut(int edgeId, int edgeIndex, int start_node);
     	bool addEdge(const edge& edgeIn);
         void addShortcutsIndexes();
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
@@ -134,7 +134,7 @@ private:
 	void explore(int cur_node, double cur_cost, int dir, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
 	double getcost(int node_id, int dir);
 	void setcost(int node_id, int dir, double c);
-    void setparent(int node_id, int dir, int parnode, int paredge);
+	void setparent(const int node_id, const int dir, const int parnode, const int paredge, const int paredgeindex);
 
 private:
 	GraphEdgeVector m_vecEdgeVector;

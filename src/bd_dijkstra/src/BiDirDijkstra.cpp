@@ -146,17 +146,19 @@ void BiDirDijkstra::setcost(int node_id, int dir, double c)
 	}
 }
 
-void BiDirDijkstra::setparent(int node_id, int dir, int parnode, int paredge)
+void BiDirDijkstra::setparent(const int node_id, const int dir, const int parnode, const int paredge, const int paredgeindex)
 {
 	if(dir == 1)
 	{
 		m_pFParent[node_id].par_Node = parnode;
 		m_pFParent[node_id].par_Edge = paredge;
+		m_pFParent[node_id].par_EdgeIndex = paredgeindex;
 	}
 	else
 	{
 		m_pRParent[node_id].par_Node = parnode;
 		m_pRParent[node_id].par_Edge = paredge;
+		m_pRParent[node_id].par_EdgeIndex = paredgeindex;
 	}
 }
 
@@ -170,11 +172,9 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 		return;
     fconstruct_path(m_pFParent[node_id].par_Node);
 
-    const uint32_t edge_ID = m_pFParent[node_id].par_Edge;
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
 //    DBG("FORWARD\n");
 
-    unwrapShortcut(edge_ID,  node_id);
+    unwrapShortcut(m_pFParent[node_id].par_Edge, m_pFParent[node_id].par_EdgeIndex, node_id);
 //    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
 
 }
@@ -195,18 +195,14 @@ void BiDirDijkstra::rconstruct_path(int node_id)
 		return;
     }
 
-    const uint32_t edge_ID = m_pRParent[node_id].par_Edge;
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]];
 //    DBG("REVERSE\n");
 
-    unwrapShortcutR(edge_ID, node_id);
-
+    unwrapShortcut(m_pRParent[node_id].par_Edge, m_pRParent[node_id].par_EdgeIndex, node_id);
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
-void BiDirDijkstra::unwrapShortcut(int edgeID, int start_node)
+void BiDirDijkstra::unwrapShortcut(int edgeID, int edgeIndex,int start_node)
 {
-    int edgeIndex = m_mapEdgeId2Index[edgeID];
     ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
     GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
 
@@ -231,43 +227,12 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int start_node)
     }
     else
     {
-        unwrapShortcut(secondEdge.EdgeID, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
+        unwrapShortcut(secondEdge.EdgeID, secondEdge.EdgeIndex, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
                                                secondEdge.EndNode : secondEdge.StartNode);
-        unwrapShortcut(firstEdge.EdgeID, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
+        unwrapShortcut(firstEdge.EdgeID, firstEdge.EdgeIndex, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
     }
 }
 
-void BiDirDijkstra::unwrapShortcutR(int edgeID, int start_node)
-{
-    int edgeIndex = m_mapEdgeId2Index[edgeID];
-    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-
-    int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
-    int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
-    GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
-    GraphEdgeInfo BedgeInfo = m_vecEdgeVector[Bindex];
-
-    GraphEdgeInfo& firstEdge = start_node == AedgeInfo.StartNode || start_node == AedgeInfo.EndNode ?
-                AedgeInfo : BedgeInfo;
-    GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
-                 BedgeInfo : AedgeInfo;
-
-    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
-    {
-        path_element_t pt;
-        pt.vertex_id = edgeInfo.StartNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
-        pt.edge_id = edgeID;
-        pt.cost = edgeInfo.Cost;
-        m_vecPath.push_back(pt);
-    }
-    else
-    {
-        unwrapShortcut(firstEdge.EdgeID, firstEdge.StartNode == start_node ? firstEdge.EndNode : firstEdge.StartNode);
-        unwrapShortcut(secondEdge.EdgeID, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
-                                               secondEdge.StartNode : secondEdge.EndNode);
-    }
-}
 /*
 	This is the main exploration module. The parameter dir indicates whether the exploration will be in forward or reverser direction. The reference to the corresponding
 	que is also passed as parameter que. The current node and the current costs are also available as parameter.
@@ -319,7 +284,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 //                    DBG("Koszt nowego %f \n", edge_cost);
 					// explore the node, and push it in the queue
 					setcost(new_node, dir, cur_cost + edge_cost);
-					setparent(new_node, dir, cur_node, edge.EdgeID);
+					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
 
 					// Update the minimum cost found so far.
@@ -357,7 +322,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
                     }
 //                    DBG("Koszt nowego %f \n", edge_cost);
 					setcost(new_node, dir, cur_cost + edge_cost);
-					setparent(new_node, dir, cur_node, edge.EdgeID);
+					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
 
 					// Update the minimum cost found so far.
