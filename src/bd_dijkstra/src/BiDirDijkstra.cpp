@@ -463,7 +463,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
         }
 
         atm.stopMeasurement();
-        DBG("Czas algorytmu CH: %f\n", atm.getMeanTime())
+        DBG("%f\n", atm.getMeanTime())
 	}
 //    DBG("calling deleteall\n");
 	deleteall();

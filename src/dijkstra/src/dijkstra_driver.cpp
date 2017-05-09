@@ -363,7 +363,7 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
     path.dpPrint(ret_path, sequence);
 
     atm.stopMeasurement();
-    DBG("Dijkstra: Czas algorytmu %f \n", atm.getMeanTime());
+    DBG("%f \n", atm.getMeanTime());
 
     #if 1
     *err_msg = strdup("OK");

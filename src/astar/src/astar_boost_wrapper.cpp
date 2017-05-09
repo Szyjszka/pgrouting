@@ -304,7 +304,7 @@ try {
     }
 
     atm.stopMeasurement();
-    DBG("ASTAR: Czas algorytmu %f \n", atm.getMeanTime());
+    DBG("%f \n", atm.getMeanTime());
     return EXIT_SUCCESS;
   }
  }
