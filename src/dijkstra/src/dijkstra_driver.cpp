@@ -331,18 +331,18 @@ int  do_pgr_dijkstra(pgr_edge_t  *data_edges, int64_t total_tuples,
     Pgr_dijkstra < UndirectedGraph > undigraph(gType, initial_size);
 
 
-    DBG("Z %d do %d\n", start_vertex, end_vertex);
+//    DBG("Z %d do %d\n", start_vertex, end_vertex);
     RouterCH::AlgorithmTimeMeasure atm;
-    atm.startMeasurement();
 
     if (directedFlag) {
       digraph.initialize_graph(data_edges, total_tuples);
+      atm.startMeasurement();
       digraph.dijkstra(path, start_vertex, end_vertex);
     } else {
       undigraph.initialize_graph(data_edges, total_tuples);
+      atm.startMeasurement();
       undigraph.dijkstra(path, start_vertex, end_vertex);
     }
-
 
     int count(path.path.size());
 
