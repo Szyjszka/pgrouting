@@ -377,7 +377,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	m_pRParent[end_vertex].par_Edge = -1;
 	m_pRCost[end_vertex] = 0.0;
 	rque.push(std::make_pair(0.0, end_vertex));
-    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
+//    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
     RouterCH::AlgorithmTimeMeasure atm;
     atm.startMeasurement();
 	int i;
