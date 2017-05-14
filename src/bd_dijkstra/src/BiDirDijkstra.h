@@ -178,7 +178,8 @@ private:
 	GraphNodeVector m_vecNodeVector;
     	ShortcutInfos m_shortcutsInfos;
 
-    std::vector<bool> m_ForwardStall;
+    std::vector<int> m_ForwardStall;
+    std::vector<int> m_ReverseStall;
     const double EPSILON_PLUS_1 = 1;
     //For every index stores it's shortcuts
     struct ShortcutIndexes{
