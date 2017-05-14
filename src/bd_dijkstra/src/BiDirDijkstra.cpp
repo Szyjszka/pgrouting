@@ -121,7 +121,6 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
 {
     if(m_ReverseStall[cur_node])
     {
-//        DBG("Tu nie trzeba\n");
         return;
     }
         int i;
@@ -151,7 +150,6 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
                     if(m_ReverseStall[new_node])
                     {
                         m_ReverseStall[new_node] = false;
-//                        DBG("UNstall\n");
                     }
                     // Update the minimum cost found so far.
                     if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
@@ -160,17 +158,23 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
                         m_MidNode = new_node;
                     }
                 }
-            }
-            else
-            {
-                if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+                else if(getcostReverse(new_node) + EPSILON_PLUS_1*edge.Cost < getcostReverse(cur_node))
                 {
-                    m_ReverseStall[cur_node] = true;
-//                    DBG("Stall\n");
-                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
-                    return;
+                        m_ReverseStall[cur_node] = true;
+                        setcostReverse(cur_node, (getcostReverse(new_node) + EPSILON_PLUS_1*edge.Cost));
+                        return;
                 }
             }
+//            else
+//            {
+//                if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+//                {
+//                    m_ReverseStall[cur_node] = true;
+//                    DBG("Stall\n");
+//                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+//                    return;
+//                }
+//            }
         }
 }
 
@@ -183,7 +187,6 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
 {
     if(m_ForwardStall[cur_node])
     {
-//        DBG("Tu nie trzeba\n");
         return;
     }
     int i;
@@ -212,7 +215,6 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
                 setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
                 que.push(std::make_pair(edge_cost, new_node));
                 if(m_ForwardStall[new_node]){
-                    DBG("UNStall\n");
                     m_ForwardStall[new_node] = false;
                 }
                 // Update the minimum cost found so far.
@@ -222,17 +224,23 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
                     m_MidNode = new_node;
                 }
             }
-        }
-        else
-        {
-            if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+            else if(getcost(new_node) + EPSILON_PLUS_1*edge.Cost < getcost(cur_node))
             {
-                m_ForwardStall[cur_node] = true;
-                setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
-                DBG("Stall\n");
-                return;
+                    m_ForwardStall[cur_node] = true;
+                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+                    return;
             }
         }
+//        else
+//        {
+//            if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+//            {
+//                m_ForwardStall[cur_node] = true;
+//                setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+//                DBG("Stall\n");
+//                return;
+//            }
+//        }
     }
 }
 
