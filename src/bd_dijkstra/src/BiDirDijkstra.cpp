@@ -119,8 +119,11 @@ void BiDirDijkstra::deleteall()
 
 void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
-//    if(m_ReverseStall[cur_node])
-//        return;
+    if(m_ReverseStall[cur_node])
+    {
+//        DBG("Tu nie trzeba\n");
+        return;
+    }
         int i;
         // Number of connected edges
         int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
@@ -145,8 +148,11 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
                     setcostReverse(new_node, edge_cost);
                     setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
                     que.push(std::make_pair(edge_cost, new_node));
-//                    m_ReverseStall[cur_node] = false;
-
+                    if(m_ReverseStall[new_node])
+                    {
+                        m_ReverseStall[new_node] = false;
+//                        DBG("UNstall\n");
+                    }
                     // Update the minimum cost found so far.
                     if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
                     {
@@ -155,15 +161,16 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
                     }
                 }
             }
-//            else
-//            {
-//                if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
-//                {
-//                    m_ReverseStall[cur_node] = true;
-//                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
-//                    return;
-//                }
-//            }
+            else
+            {
+                if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+                {
+                    m_ReverseStall[cur_node] = true;
+//                    DBG("Stall\n");
+                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+                    return;
+                }
+            }
         }
 }
 
@@ -174,8 +181,11 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
 
 void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
-//    if(m_ForwardStall[cur_node])
-//        return;
+    if(m_ForwardStall[cur_node])
+    {
+//        DBG("Tu nie trzeba\n");
+        return;
+    }
     int i;
     // Number of connected edges
     int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
@@ -201,7 +211,10 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
                 setcost(new_node, edge_cost);
                 setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
                 que.push(std::make_pair(edge_cost, new_node));
-//                m_ForwardStall[new_node] = false;
+                if(m_ForwardStall[new_node]){
+                    DBG("UNStall\n");
+                    m_ForwardStall[new_node] = false;
+                }
                 // Update the minimum cost found so far.
                 if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
                 {
@@ -210,15 +223,16 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
                 }
             }
         }
-//        else
-//        {
-//            if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
-//            {
-//                m_ForwardStall[cur_node] = true;
-//                setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
-//                return;
-//            }
-//        }
+        else
+        {
+            if((getcost(new_node) + EPSILON_PLUS_1*edge.Cost) < getcost(cur_node))
+            {
+                m_ForwardStall[cur_node] = true;
+                setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+                DBG("Stall\n");
+                return;
+            }
+        }
     }
 }
 
