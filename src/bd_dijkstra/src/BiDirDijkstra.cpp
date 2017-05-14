@@ -387,6 +387,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
     m_ForwardStall.resize(m_vecNodeVector.size(), false);
     m_ReverseStall.resize(m_vecNodeVector.size(), false);
     *path = (path_element_t *) malloc(sizeof(path_element_t) * (30000 + 1));
+    m_vecPath.reserve(30000);
     RouterCH::AlgorithmTimeMeasure atm;
     atm.startMeasurement();
 	int i;
