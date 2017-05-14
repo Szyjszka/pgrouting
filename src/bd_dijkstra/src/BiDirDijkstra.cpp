@@ -282,15 +282,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 		// Get the edge from the edge list.
 		GraphEdgeInfo edge = m_vecEdgeVector[edge_index];
 		// Get the connected node
-		int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
-//        if(dir == 1){
-//            DBG("FORWARD ");
-//        }
-//        else{
-//            DBG("BACKWARD ");
-//        }
-//        DBG("Obecny %d rozpatrywany %d cur_node == edge.StartNode %d edge.incOrder %d \n",
-//            cur_node+1, new_node+1, cur_node == edge.StartNode, edge.incOrder);
+        int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
 		if(cur_node == edge.StartNode)
 		{
 			// Current node is the startnode of the edge. For forward search it should use forward cost, otherwise it should use the reverse cost,
@@ -305,14 +297,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
             {
 				// Check if the current edge gives better result
 				if(cur_cost + edge_cost < getcost(new_node, dir))
-				{
-                    if(dir == 1){
-//                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
-                    }
-                    else{
-//                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
-                    }
-//                    DBG("Koszt nowego %f \n", edge_cost);
+                {
 					// explore the node, and push it in the queue
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
@@ -336,22 +321,13 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 			else
 				edge_cost = edge.Cost;
 
-//            DBG("edge.Direction == 0 %d edge_cost >= 0.0 %d \n", (edge.Direction == 0 , edge_cost >= 0.0))
 			// Check if the direction is valid for exploration
             if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
 			{
 
-//                DBG("Koszt rozpatrywanego wierzcholka %f a relaksowany %f\n", getcost(new_node, dir), cur_cost + edge_cost);
 				// Check if the current edge gives better result
 				if(cur_cost + edge_cost < getcost(new_node, dir))
-				{
-                    if(dir == 1){
-//                        DBG("FORWARD %d %d\n", cur_node+1, new_node+1);
-                    }
-                    else{
-//                        DBG("BACKWARD %d %d\n", cur_node+1, new_node+1);
-                    }
-//                    DBG("Koszt nowego %f \n", edge_cost);
+                {
 					setcost(new_node, dir, cur_cost + edge_cost);
 					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
