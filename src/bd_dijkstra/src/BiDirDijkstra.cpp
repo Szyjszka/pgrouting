@@ -124,7 +124,7 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
         int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
         double edge_cost;
 
-        for(i = 0; i < con_edge; i++)
+        for(i = 0; i < con_edge; ++i)
         {
             int edge_index = m_vecNodeVector[cur_node]->Connected_Edges_Index[i];
             // Get the edge from the edge list.
@@ -134,7 +134,7 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
             edge_cost = edge.Cost;
             const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
             // Check if the direction is valid for exploration
-            if((edge_cost >= 0.0) && goodOrder)
+            if(goodOrder)
             {
                 // Check if the current edge gives better result
                 if(cur_cost + edge_cost < getcostReverse(new_node))
@@ -271,7 +271,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
 	int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
 	double edge_cost;
 
-	for(i = 0; i < con_edge; i++)
+    for(i = 0; i < con_edge; ++i)
 	{
 		int edge_index = m_vecNodeVector[cur_node]->Connected_Edges_Index[i];
 		// Get the edge from the edge list.
@@ -282,7 +282,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
         const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
 
         // Check if the direction is valid for exploration
-        if((edge_cost >= 0.0) && goodOrder)
+        if(goodOrder)
         {
             // Check if the current edge gives better result
             if(cur_cost + edge_cost < getcost(new_node))
@@ -344,6 +344,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	m_pRCost[end_vertex] = 0.0;
 	rque.push(std::make_pair(0.0, end_vertex));
 //    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
+    m_ForwardStall.resize(m_vecNodeVector.size(), false);
     RouterCH::AlgorithmTimeMeasure atm;
     atm.startMeasurement();
 	int i;
