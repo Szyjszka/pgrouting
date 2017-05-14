@@ -364,6 +364,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 //    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
     m_ForwardStall.resize(m_vecNodeVector.size(), false);
     m_ReverseStall.resize(m_vecNodeVector.size(), false);
+    *path = (path_element_t *) malloc(sizeof(path_element_t) * (10000 + 1));
     RouterCH::AlgorithmTimeMeasure atm;
     atm.startMeasurement();
 	int i;
@@ -433,7 +434,6 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 		// Transfer data path to path_element_t format and allocate memory and populate the pointer
 
 //        DBG("BiDirDijkstra::bidir_dijkstra: allocating path m_vecPath.size=%d\n", m_vecPath.size() + 1);
-		*path = (path_element_t *) malloc(sizeof(path_element_t) * (m_vecPath.size() + 1));
 		*path_count = m_vecPath.size();
 //        DBG("BiDirDijkstra::bidir_dijkstra: allocated path\n");
 
