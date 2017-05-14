@@ -283,15 +283,9 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 		GraphEdgeInfo edge = m_vecEdgeVector[edge_index];
 		// Get the connected node
         int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
+        edge_cost = edge.Cost;
 		if(cur_node == edge.StartNode)
-		{
-			// Current node is the startnode of the edge. For forward search it should use forward cost, otherwise it should use the reverse cost,
-			// i.e. if the reverse direction is valid then this node may be visited from the end node.
-			if(dir > 0)
-				edge_cost = edge.Cost;
-			else
-				edge_cost = edge.ReverseCost;
-
+        {
 			// Check if the direction is valid for exploration
             if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
             {
@@ -313,13 +307,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 			}
 		}
 		else
-		{
-			// Current node is the endnode of the edge. For forward search it should use reverse cost, otherwise it should use the forward cost,
-			// i.e. if the forward direction is valid then this node may be visited from the start node.
-			if(dir > 0)
-				edge_cost = edge.ReverseCost;
-			else
-				edge_cost = edge.Cost;
+        {
 
 			// Check if the direction is valid for exploration
             if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
