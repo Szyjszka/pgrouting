@@ -134,7 +134,7 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
             edge_cost = edge.Cost;
             const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
             // Check if the direction is valid for exploration
-            if((edge.Direction == 0 || edge_cost >= 0.0) && goodOrder)
+            if((edge_cost >= 0.0) && goodOrder)
             {
                 // Check if the current edge gives better result
                 if(cur_cost + edge_cost < getcostReverse(new_node))
@@ -282,7 +282,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
         const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
 
         // Check if the direction is valid for exploration
-        if((edge.Direction == 0 || edge_cost >= 0.0) && goodOrder)
+        if((edge_cost >= 0.0) && goodOrder)
         {
             // Check if the current edge gives better result
             if(cur_cost + edge_cost < getcost(new_node))
