@@ -364,7 +364,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 //    DBG("Z %d do %d \n", start_vertex+1, end_vertex+1);
     m_ForwardStall.resize(m_vecNodeVector.size(), false);
     m_ReverseStall.resize(m_vecNodeVector.size(), false);
-    *path = (path_element_t *) malloc(sizeof(path_element_t) * (10000 + 1));
+    *path = (path_element_t *) malloc(sizeof(path_element_t) * (30000 + 1));
     RouterCH::AlgorithmTimeMeasure atm;
     atm.startMeasurement();
 	int i;
@@ -387,10 +387,8 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
             fTop = fque.top();
         if(!rque.empty())
             rTop = rque.top();
-//        DBG("Zostalo %d i %d wierzcholkow\n", fque.size(), rque.size());
         if(rTop.first > m_MinCost && fTop.first > m_MinCost) //We are done, there is no path with lower cost
         {
-//            DBG("SKONCZYLISMY KOSZT: %f\n", m_MinCost);
 			break;
         }
         if(((rTop.first < fTop.first) || fque.empty()) && !rque.empty()) // Explore from reverse queue
