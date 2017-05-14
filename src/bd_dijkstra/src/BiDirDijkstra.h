@@ -131,10 +131,42 @@ private:
 	void init();
 	void initall(int maxNode);
 	void deleteall();
-	void explore(int cur_node, double cur_cost, int dir, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
-	double getcost(int node_id, int dir);
-	void setcost(int node_id, int dir, double c);
-	void setparent(const int node_id, const int dir, const int parnode, const int paredge, const int paredgeindex);
+    void explore(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
+    void exploreReverse(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
+
+    inline double getcost(const int node_id)
+    {
+        return(m_pFCost[node_id]);
+    }
+
+    inline double getcostReverse(const int node_id)
+    {
+        return(m_pRCost[node_id]);
+    }
+    /*
+        Set the forward or reverse cost list depending on dir (1 for forward search and -1 for reverse search.
+    */
+    inline void setcost(int node_id, double c)
+    {
+        m_pFCost[node_id] = c;
+    }
+    inline void setcostReverse(int node_id, double c)
+    {
+        m_pRCost[node_id] = c;
+    }
+
+    inline void setparent(const int node_id, const int parnode, const int paredge, const int paredgeindex)
+    {
+            m_pFParent[node_id].par_Node = parnode;
+            m_pFParent[node_id].par_Edge = paredge;
+            m_pFParent[node_id].par_EdgeIndex = paredgeindex;
+    }
+    inline void setparentReverse(const int node_id, const int parnode, const int paredge, const int paredgeindex)
+    {
+            m_pRParent[node_id].par_Node = parnode;
+            m_pRParent[node_id].par_Edge = paredge;
+            m_pRParent[node_id].par_EdgeIndex = paredgeindex;
+    }
     void unwrapShortcutR(int edgeID, int edgeIndex, int start_node);
 
 private:

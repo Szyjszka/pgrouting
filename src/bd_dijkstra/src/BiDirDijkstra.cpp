@@ -114,53 +114,73 @@ void BiDirDijkstra::deleteall()
 	delete [] m_pFParent;
 	delete [] m_pRParent;
 	delete [] m_pFCost;
-	delete [] m_pRCost;
+    delete [] m_pRCost;
 }
 
-/*
-	Get the current cost from source to the current node if direction is 1 else the cost to reach target from the current node.
-*/
-double BiDirDijkstra::getcost(int node_id, int dir)
+void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
-	if(dir == 1)
-	{
-		return(m_pFCost[node_id]);
-	}
-	else
-	{
-		return(m_pRCost[node_id]);
-	}
-}
-/*
-	Set the forward or reverse cost list depending on dir (1 for forward search and -1 for reverse search.
-*/
-void BiDirDijkstra::setcost(int node_id, int dir, double c)
-{
-	if(dir == 1)
-	{
-		m_pFCost[node_id] = c;
-	}
-	else
-	{
-		m_pRCost[node_id] = c;
-	}
+        int i;
+        // Number of connected edges
+        int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
+        double edge_cost;
+
+        for(i = 0; i < con_edge; i++)
+        {
+            int edge_index = m_vecNodeVector[cur_node]->Connected_Edges_Index[i];
+            // Get the edge from the edge list.
+            GraphEdgeInfo edge = m_vecEdgeVector[edge_index];
+            // Get the connected node
+            int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
+            edge_cost = edge.Cost;
+            if(cur_node == edge.StartNode)
+            {
+                // Check if the direction is valid for exploration
+                if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
+                {
+                    // Check if the current edge gives better result
+                    if(cur_cost + edge_cost < getcostReverse(new_node))
+                    {
+                        // explore the node, and push it in the queue
+                        setcostReverse(new_node, cur_cost + edge_cost);
+                        setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
+                        que.push(std::make_pair(cur_cost + edge_cost, new_node));
+
+                        // Update the minimum cost found so far.
+                        if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
+                        {
+                            m_MinCost = getcostReverse(new_node) + getcost(new_node);
+                            m_MidNode = new_node;
+                        }
+                    }
+                }
+            }
+            else
+            {
+
+                // Check if the direction is valid for exploration
+                if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
+                {
+
+                    // Check if the current edge gives better result
+                    if(cur_cost + edge_cost < getcostReverse(new_node))
+                    {
+                        setcostReverse(new_node, cur_cost + edge_cost);
+                        setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
+                        que.push(std::make_pair(cur_cost + edge_cost, new_node));
+
+                        // Update the minimum cost found so far.
+                        if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
+                        {
+                            m_MinCost = getcostReverse(new_node) + getcost(new_node);
+                            m_MidNode = new_node;
+                        }
+                    }
+                }
+            }
+        }
 }
 
-void BiDirDijkstra::setparent(const int node_id, const int dir, const int parnode, const int paredge, const int paredgeindex)
-{
-	if(dir == 1)
-	{
-		m_pFParent[node_id].par_Node = parnode;
-		m_pFParent[node_id].par_Edge = paredge;
-		m_pFParent[node_id].par_EdgeIndex = paredgeindex;
-	}
-	else
-	{
-		m_pRParent[node_id].par_Node = parnode;
-		m_pRParent[node_id].par_Edge = paredge;
-		m_pRParent[node_id].par_EdgeIndex = paredgeindex;
-	}
-}
+
 
 /*
 	Reconstruct path for forward search. It is like normal dijkstra. The parent array contains the parent of the current node and there is a -1 in the source.
@@ -269,7 +289,7 @@ void BiDirDijkstra::unwrapShortcutR(int edgeID, int edgeIndex, int start_node)
 	que is also passed as parameter que. The current node and the current costs are also available as parameter.
 */
 
-void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
+void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
 	int i;
 	// Number of connected edges
@@ -290,17 +310,17 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
             if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
             {
 				// Check if the current edge gives better result
-				if(cur_cost + edge_cost < getcost(new_node, dir))
+                if(cur_cost + edge_cost < getcost(new_node))
                 {
 					// explore the node, and push it in the queue
-					setcost(new_node, dir, cur_cost + edge_cost);
-					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
+                    setcost(new_node, cur_cost + edge_cost);
+                    setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
 
 					// Update the minimum cost found so far.
-					if(getcost(new_node, dir) + getcost(new_node, dir * -1) < m_MinCost)
+                    if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
 					{
-						m_MinCost = getcost(new_node, dir) + getcost(new_node, dir * -1);
+                        m_MinCost = getcost(new_node) + getcostReverse(new_node);
 						m_MidNode = new_node;
 					}
 				}
@@ -314,16 +334,16 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, int dir, std::priorit
 			{
 
 				// Check if the current edge gives better result
-				if(cur_cost + edge_cost < getcost(new_node, dir))
+                if(cur_cost + edge_cost < getcost(new_node))
                 {
-					setcost(new_node, dir, cur_cost + edge_cost);
-					setparent(new_node, dir, cur_node, edge.EdgeID, edge.EdgeIndex);
+                    setcost(new_node, cur_cost + edge_cost);
+                    setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
 					que.push(std::make_pair(cur_cost + edge_cost, new_node));
 
 					// Update the minimum cost found so far.
-					if(getcost(new_node, dir) + getcost(new_node, dir * -1) < m_MinCost)
+                    if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
 					{
-						m_MinCost = getcost(new_node, dir) + getcost(new_node, dir * -1);
+                        m_MinCost = getcost(new_node) + getcostReverse(new_node);
 						m_MidNode = new_node;
 					}
 				}
@@ -403,19 +423,15 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
         }
         if(((rTop.first < fTop.first) || fque.empty()) && !rque.empty()) // Explore from reverse queue
 		{
-			cur_node = rTop.second;
-            int dir = -1;
-//            DBG("Wybieramy node BACKWARD %d o koszcie %f\n", cur_node+1, rTop.first);
+            cur_node = rTop.second;
             rque.pop();
-            explore(cur_node, rTop.first, dir, rque);
+            exploreReverse(cur_node, rTop.first, rque);
 		}
 		else                        // Explore from forward queue
 		{
-			cur_node = fTop.second;
-            int dir = 1;
-//            DBG("Wybieramy node FORWARD %d o koszcie %f\n", cur_node+1, fTop.first);
+            cur_node = fTop.second;
             fque.pop();
-            explore(cur_node, fTop.first, dir, fque);
+            explore(cur_node, fTop.first, fque);
 		}
 	}
 
