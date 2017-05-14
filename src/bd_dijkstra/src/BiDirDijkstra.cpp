@@ -132,48 +132,23 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
             // Get the connected node
             int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
             edge_cost = edge.Cost;
-            if(cur_node == edge.StartNode)
+            const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
+            // Check if the direction is valid for exploration
+            if((edge.Direction == 0 || edge_cost >= 0.0) && goodOrder)
             {
-                // Check if the direction is valid for exploration
-                if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
+                // Check if the current edge gives better result
+                if(cur_cost + edge_cost < getcostReverse(new_node))
                 {
-                    // Check if the current edge gives better result
-                    if(cur_cost + edge_cost < getcostReverse(new_node))
+                    // explore the node, and push it in the queue
+                    setcostReverse(new_node, cur_cost + edge_cost);
+                    setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
+                    que.push(std::make_pair(cur_cost + edge_cost, new_node));
+
+                    // Update the minimum cost found so far.
+                    if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
                     {
-                        // explore the node, and push it in the queue
-                        setcostReverse(new_node, cur_cost + edge_cost);
-                        setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
-                        que.push(std::make_pair(cur_cost + edge_cost, new_node));
-
-                        // Update the minimum cost found so far.
-                        if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
-                        {
-                            m_MinCost = getcostReverse(new_node) + getcost(new_node);
-                            m_MidNode = new_node;
-                        }
-                    }
-                }
-            }
-            else
-            {
-
-                // Check if the direction is valid for exploration
-                if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
-                {
-
-                    // Check if the current edge gives better result
-                    if(cur_cost + edge_cost < getcostReverse(new_node))
-                    {
-                        setcostReverse(new_node, cur_cost + edge_cost);
-                        setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
-                        que.push(std::make_pair(cur_cost + edge_cost, new_node));
-
-                        // Update the minimum cost found so far.
-                        if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
-                        {
-                            m_MinCost = getcostReverse(new_node) + getcost(new_node);
-                            m_MidNode = new_node;
-                        }
+                        m_MinCost = getcostReverse(new_node) + getcost(new_node);
+                        m_MidNode = new_node;
                     }
                 }
             }
@@ -304,52 +279,28 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
 		// Get the connected node
         int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
         edge_cost = edge.Cost;
-		if(cur_node == edge.StartNode)
+        const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
+
+        // Check if the direction is valid for exploration
+        if((edge.Direction == 0 || edge_cost >= 0.0) && goodOrder)
         {
-			// Check if the direction is valid for exploration
-            if((edge.Direction == 0 || edge_cost >= 0.0) && edge.incOrder)
+            // Check if the current edge gives better result
+            if(cur_cost + edge_cost < getcost(new_node))
             {
-				// Check if the current edge gives better result
-                if(cur_cost + edge_cost < getcost(new_node))
+                // explore the node, and push it in the queue
+                setcost(new_node, cur_cost + edge_cost);
+                setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
+                que.push(std::make_pair(cur_cost + edge_cost, new_node));
+
+                // Update the minimum cost found so far.
+                if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
                 {
-					// explore the node, and push it in the queue
-                    setcost(new_node, cur_cost + edge_cost);
-                    setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
-					que.push(std::make_pair(cur_cost + edge_cost, new_node));
-
-					// Update the minimum cost found so far.
-                    if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
-					{
-                        m_MinCost = getcost(new_node) + getcostReverse(new_node);
-						m_MidNode = new_node;
-					}
-				}
-			}
-		}
-		else
-        {
-
-			// Check if the direction is valid for exploration
-            if((edge.Direction == 0 || edge_cost >= 0.0) && !edge.incOrder)
-			{
-
-				// Check if the current edge gives better result
-                if(cur_cost + edge_cost < getcost(new_node))
-                {
-                    setcost(new_node, cur_cost + edge_cost);
-                    setparent(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
-					que.push(std::make_pair(cur_cost + edge_cost, new_node));
-
-					// Update the minimum cost found so far.
-                    if(getcost(new_node) + getcostReverse(new_node) < m_MinCost)
-					{
-                        m_MinCost = getcost(new_node) + getcostReverse(new_node);
-						m_MidNode = new_node;
-					}
-				}
-			}
-		}
-	}
+                    m_MinCost = getcost(new_node) + getcostReverse(new_node);
+                    m_MidNode = new_node;
+                }
+            }
+        }
+    }
 }
 
 /* 
