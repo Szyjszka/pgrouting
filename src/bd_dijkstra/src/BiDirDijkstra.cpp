@@ -252,11 +252,7 @@ void BiDirDijkstra::fconstruct_path(int node_id)
 		return;
     fconstruct_path(m_pFParent[node_id].par_Node);
 
-//    DBG("FORWARD\n");
-
     unwrapShortcut(m_pFParent[node_id].par_Edge, m_pFParent[node_id].par_EdgeIndex, node_id);
-//    DBG("Czy jest skrot z %d : %d %d\n",osm_id, m_shortcutsTable.find(osm_id) != m_shortcutsTable.end(), m_vecEdgeVector[m_mapEdgeId2Index[edge_ID]].Shortcut);
-
 }
 
 /*
@@ -275,12 +271,8 @@ void BiDirDijkstra::rconstruct_path(int node_id)
     rconstruct_path(m_pRParent[node_id].par_Node);
 }
 
-void BiDirDijkstra::unwrapShortcut(int edgeID, int edgeIndex,int start_node)
+void BiDirDijkstra::unwrapShortcut(const int edgeID, const int edgeIndex, const int start_node)
 {
-    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-
-
     int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
     int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
     GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
@@ -291,8 +283,9 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int edgeIndex,int start_node)
     GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
                  BedgeInfo : AedgeInfo;
 
-    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
+    if(m_shortcutsInfos[edgeIndex].shA == -1)
     {
+        GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
         path_element_t pt;
         pt.vertex_id = edgeInfo.EndNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
         pt.edge_id = edgeID;
@@ -303,15 +296,12 @@ void BiDirDijkstra::unwrapShortcut(int edgeID, int edgeIndex,int start_node)
     {
         unwrapShortcut(secondEdge.EdgeID, secondEdge.EdgeIndex, secondEdge.EndNode == firstEdge.StartNode ||  secondEdge.EndNode == firstEdge.EndNode ?
                                                secondEdge.EndNode : secondEdge.StartNode);
-        unwrapShortcut(firstEdge.EdgeID, firstEdge.EdgeIndex, firstEdge.StartNode == start_node ? firstEdge.StartNode : firstEdge.EndNode);
+        unwrapShortcut(firstEdge.EdgeID, firstEdge.EdgeIndex, start_node);
     }
 }
 
-void BiDirDijkstra::unwrapShortcutR(int edgeID, int edgeIndex, int start_node)
+void BiDirDijkstra::unwrapShortcutR(const int edgeID, const int edgeIndex, const int start_node)
 {
-    ShortcutInfo shortcutInfo = m_shortcutsInfos[edgeIndex];
-    GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
-
     int Aindex = m_ShortcutVec[edgeIndex].shAIndex;
     int Bindex = m_ShortcutVec[edgeIndex].shBIndex;
     GraphEdgeInfo AedgeInfo = m_vecEdgeVector[Aindex];
@@ -322,8 +312,10 @@ void BiDirDijkstra::unwrapShortcutR(int edgeID, int edgeIndex, int start_node)
     GraphEdgeInfo& secondEdge = start_node != BedgeInfo.StartNode && start_node != BedgeInfo.EndNode ?
                  BedgeInfo : AedgeInfo;
 
-    if(shortcutInfo.shA == -1 && shortcutInfo.shB == -1)
+    if(m_shortcutsInfos[edgeIndex].shA == -1)
     {
+        GraphEdgeInfo edgeInfo = m_vecEdgeVector[edgeIndex];
+
         path_element_t pt;
         pt.vertex_id = edgeInfo.StartNode == start_node ? edgeInfo.StartNode : edgeInfo.EndNode;
         pt.edge_id = edgeID;
@@ -435,7 +427,7 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 	}
 	else
 	{
-		// reconstruct path from forward search
+        // reconstruct path from forward search
 		fconstruct_path(m_MidNode);
 		// reconstruct path from backward search
 		rconstruct_path(m_MidNode);

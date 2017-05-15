@@ -124,7 +124,7 @@ private:
 	bool construct_graph(edge_t *edges, int edge_count, int maxNode);
 	void fconstruct_path(int node_id);
 	void rconstruct_path(int node_id);
-        void unwrapShortcut(int edgeId, int edgeIndex, int start_node);
+        void unwrapShortcut(const int edgeId, const int edgeIndex, const int start_node);
     	bool addEdge(const edge& edgeIn);
         void addShortcutsIndexes();
 	bool connectEdge(GraphEdgeInfo& firstEdge, GraphEdgeInfo& secondEdge, bool bIsStartNodeSame);
@@ -167,7 +167,7 @@ private:
             m_pRParent[node_id].par_Edge = paredge;
             m_pRParent[node_id].par_EdgeIndex = paredgeindex;
     }
-    void unwrapShortcutR(int edgeID, int edgeIndex, int start_node);
+    void unwrapShortcutR(const int edgeID, const int edgeIndex, const int start_node);
 
 private:
 	GraphEdgeVector m_vecEdgeVector;
