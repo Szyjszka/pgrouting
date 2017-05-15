@@ -136,34 +136,30 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
             // Get the connected node
             int new_node = m_vecNodeVector[cur_node]->Connected_Nodes[i];
             edge_cost = edge.Cost + cur_cost;
-            const bool goodOrder= cur_node == edge.StartNode ? edge.incOrder : !edge.incOrder;
-            // Check if the direction is valid for exploration
-            if(goodOrder)
+
+            // Check if the current edge gives better result
+            if(edge_cost < getcostReverse(new_node))
             {
-                // Check if the current edge gives better result
-                if(edge_cost < getcostReverse(new_node))
+                // explore the node, and push it in the queue
+                setcostReverse(new_node, edge_cost);
+                setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
+                que.push(std::make_pair(edge_cost, new_node));
+                if(m_ReverseStall[new_node])
                 {
-                    // explore the node, and push it in the queue
-                    setcostReverse(new_node, edge_cost);
-                    setparentReverse(new_node, cur_node, edge.EdgeID, edge.EdgeIndex);
-                    que.push(std::make_pair(edge_cost, new_node));
-                    if(m_ReverseStall[new_node])
-                    {
-                        m_ReverseStall[new_node] = false;
-                    }
-                    // Update the minimum cost found so far.
-                    if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
-                    {
-                        m_MinCost = getcostReverse(new_node) + getcost(new_node);
-                        m_MidNode = new_node;
-                    }
+                    m_ReverseStall[new_node] = false;
                 }
-                else if(getcostReverse(new_node) + EPSILON_PLUS_1*edge.Cost < getcostReverse(cur_node))
+                // Update the minimum cost found so far.
+                if(getcostReverse(new_node) + getcost(new_node) < m_MinCost)
                 {
-                        m_ReverseStall[cur_node] = true;
-                        setcostReverse(cur_node, (getcostReverse(new_node) + EPSILON_PLUS_1*edge.Cost));
-                        return;
+                    m_MinCost = getcostReverse(new_node) + getcost(new_node);
+                    m_MidNode = new_node;
                 }
+            }
+            else if(getcostReverse(new_node) + /*EPSILON_PLUS_1**/edge.Cost < getcostReverse(cur_node))
+            {
+                m_ReverseStall[cur_node] = true;
+                setcostReverse(cur_node, (getcostReverse(new_node) + /*EPSILON_PLUS_1**/edge.Cost));
+                return;
             }
 //            else
 //            {
@@ -224,10 +220,10 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
                     m_MidNode = new_node;
                 }
             }
-            else if(getcost(new_node) + EPSILON_PLUS_1*edge.Cost < getcost(cur_node))
+            else if(getcost(new_node) + /*EPSILON_PLUS_1**/edge.Cost < getcost(cur_node))
             {
                     m_ForwardStall[cur_node] = true;
-                    setcost(cur_node, (getcost(new_node) + EPSILON_PLUS_1*edge.Cost));
+                    setcost(cur_node, (getcost(new_node) + /* EPSILON_PLUS_1**/edge.Cost));
                     return;
             }
         }
@@ -363,7 +359,6 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 //    DBG("Calling construct_graph\n");
 	construct_graph(edges, edge_count, maxNode);
 	
-
 	//int nodeCount = m_vecNodeVector.size();
 //	DBG("Setting up std::priority_queue\n");
 	std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > fque;
@@ -482,16 +477,6 @@ int BiDirDijkstra::bidir_dijkstra(edge_t *edges, unsigned int edge_count, int ma
 bool BiDirDijkstra::construct_graph(edge_t* edges, int edge_count, int maxNode)
 {
 	int i;
-
-	/*
-	// Create a dummy node
-//    DBG("Create a dummy node\n");
-	GraphNodeInfo nodeInfo;
-//    DBG("calling nodeInfo.Connected_Edges_Index.clear\n");
-	nodeInfo.Connected_Edges_Index.clear();
-//    DBG("calling nodeInfo.Connected_Nodes.clear\n");
-	nodeInfo.Connected_Nodes.clear();
-	*/
 
 	// Insert the dummy node into the node list. This acts as place holder. Also change the nodeId so that nodeId and node index in the vector are same.
 	// There may be some nodes here that does not appear in the edge list. The size of the list is upto maxNode which is equal to maximum node id.
@@ -616,14 +601,19 @@ bool BiDirDijkstra::addEdge(const edge_t& edgeIn)
 
     if(newEdge.Shortcut < 1)
     {
-        // update connectivity information for the start node.
-        m_vecNodeVector[newEdge.StartNode]->Connected_Nodes.push_back(newEdge.EndNode);
-        m_vecNodeVector[newEdge.StartNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
 
         // update connectivity information for the start node.
-        m_vecNodeVector[newEdge.EndNode]->Connected_Nodes.push_back(newEdge.StartNode);
-        m_vecNodeVector[newEdge.EndNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
-
+        if(newEdge.incOrder)
+        {
+            m_vecNodeVector[newEdge.StartNode]->Connected_Nodes.push_back(newEdge.EndNode);
+            m_vecNodeVector[newEdge.StartNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
+        }
+        // update connectivity information for the start node.
+        else
+        {
+            m_vecNodeVector[newEdge.EndNode]->Connected_Nodes.push_back(newEdge.StartNode);
+            m_vecNodeVector[newEdge.EndNode]->Connected_Edges_Index.push_back(newEdge.EdgeIndex);
+        }
 
         //Adding edge to the list
         m_mapEdgeId2Index.insert(std::make_pair(newEdge.EdgeID, m_vecEdgeVector.size()));
