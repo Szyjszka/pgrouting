@@ -48,23 +48,23 @@
 typedef std::vector<long> LongVector;
 typedef std::vector<LongVector> VectorOfLongVector;
 //typedef std::pair<int, bool> PIB;
-typedef std::pair<double, int> PDI;
-//typedef std::pair<double, std::vector<int> > PDVI;
+typedef std::pair<float, int> PDI;
+//typedef std::pair<float, std::vector<int> > PDVI;
 /*
 typedef struct edge 
 {
 	int id;
 	int source;
 	int target;
-	double cost;
-	double reverse_cost;
+    float cost;
+    float reverse_cost;
 } edge_t;
 
 typedef struct path_element 
 {
 	int vertex_id;
 	int edge_id;
-	double cost;
+    float cost;
 }path_element_t;
 */
 
@@ -87,8 +87,8 @@ public:
 	int EdgeIndex;
 	int Direction;
 	int64_t osm_id;
-	double Cost;
-	double ReverseCost;
+    float Cost;
+    float ReverseCost;
 	int StartNode;
 	int EndNode;
 	bool incOrder;
@@ -131,26 +131,26 @@ private:
 	void init();
 	void initall(int maxNode);
 	void deleteall();
-    void explore(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
-    void exploreReverse(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
+    void explore(int cur_node, float cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
+    void exploreReverse(int cur_node, float cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que);
 
-    inline double getcost(const int node_id)
+    inline float getcost(const int node_id)
     {
         return(m_pFCost[node_id]);
     }
 
-    inline double getcostReverse(const int node_id)
+    inline float getcostReverse(const int node_id)
     {
         return(m_pRCost[node_id]);
     }
     /*
         Set the forward or reverse cost list depending on dir (1 for forward search and -1 for reverse search.
     */
-    inline void setcost(int node_id, double c)
+    inline void setcost(int node_id, float c)
     {
         m_pFCost[node_id] = c;
     }
-    inline void setcostReverse(int node_id, double c)
+    inline void setcostReverse(int node_id, float c)
     {
         m_pRCost[node_id] = c;
     }
@@ -180,7 +180,7 @@ private:
 
     std::vector<int> m_ForwardStall;
     std::vector<int> m_ReverseStall;
-    const double EPSILON_PLUS_1 = 1;
+    const float EPSILON_PLUS_1 = 1;
     //For every index stores it's shortcuts
     struct ShortcutIndexes{
         uint32_t shAIndex, shBIndex;
@@ -195,13 +195,13 @@ private:
 	int m_lStartNodeId;
 	int m_lEndNodeId;
 
-	double m_MinCost;
+    float m_MinCost;
 	int m_MidNode;
 	std::vector <path_element_t> m_vecPath;
 	PARENT_PATH *m_pFParent;
 	PARENT_PATH *m_pRParent;
-	double *m_pFCost;
-	double *m_pRCost;
+    float *m_pFCost;
+    float *m_pRCost;
 };
 
 #endif

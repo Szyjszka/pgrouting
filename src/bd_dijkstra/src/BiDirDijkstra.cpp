@@ -80,8 +80,8 @@ void BiDirDijkstra::initall(int maxNode)
 //    DBG("BiDirDijkstra::initall: allocated m_pFParent, m_pRParent\n");
 
 //    DBG("BiDirDijkstra::initall: allocating m_pFCost, m_pRCost maxNode: %d\n", maxNode+1);
-	m_pFCost = new double[maxNode + 1];
-	m_pRCost = new double[maxNode + 1];
+    m_pFCost = new float[maxNode + 1];
+    m_pRCost = new float[maxNode + 1];
 //    DBG("BiDirDijkstra::initall: allocated m_pFCost, m_pRCost\n");
 
 	for(i = 0; i <= maxNode; i++)
@@ -117,7 +117,7 @@ void BiDirDijkstra::deleteall()
     delete [] m_pRCost;
 }
 
-void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
+void BiDirDijkstra::exploreReverse(int cur_node, float cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
     if(m_ReverseStall[cur_node])
     {
@@ -126,7 +126,7 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
         int i;
         // Number of connected edges
         int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
-        double edge_cost;
+        float edge_cost;
 
         for(i = 0; i < con_edge; ++i)
         {
@@ -179,7 +179,7 @@ void BiDirDijkstra::exploreReverse(int cur_node, double cur_cost, std::priority_
     que is also passed as parameter que. The current node and the current costs are also available as parameter.
 */
 
-void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
+void BiDirDijkstra::explore(int cur_node, float cur_cost, std::priority_queue<PDI, std::vector<PDI>, std::greater<PDI> > &que)
 {
     if(m_ForwardStall[cur_node])
     {
@@ -188,7 +188,7 @@ void BiDirDijkstra::explore(int cur_node, double cur_cost, std::priority_queue<P
     int i;
     // Number of connected edges
     int con_edge = m_vecNodeVector[cur_node]->Connected_Edges_Index.size();
-    double edge_cost;
+    float edge_cost;
 
     for(i = 0; i < con_edge; ++i)
     {
