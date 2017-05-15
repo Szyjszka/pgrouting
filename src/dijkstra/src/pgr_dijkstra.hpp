@@ -55,7 +55,13 @@ class Pgr_dijkstra
     */
     void
     initialize_graph(pgr_edge_t *data_edges, int64_t count) {
-          this->graph_insert_data(data_edges, count);
+        this->graph_insert_data(data_edges, count);
+        this->predecessors.clear();
+        this->distances.clear();
+
+        this->predecessors.resize(boost::num_vertices(this->graph));
+        this->distances.resize(boost::num_vertices(this->graph));
+
     }
 
     void
@@ -63,12 +69,6 @@ class Pgr_dijkstra
       typedef typename boost::graph_traits < G >::vertex_descriptor V;
 
       // adjust predecessors and distances vectors
-      this->predecessors.clear();
-      this->distances.clear();
-
-      this->predecessors.resize(boost::num_vertices(this->graph));
-      this->distances.resize(boost::num_vertices(this->graph));
-
       // get the graphs source and target
       V v_source;
       V v_target;
